@@ -1,4 +1,5 @@
 import 'package:church/screens/homepage.dart';
+import 'package:church/screens/signup.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatefulWidget {
@@ -20,23 +21,32 @@ class _LoginPageState extends State<LoginPage> {
       final form = _formKey.currentState;
       if(form != null && form.validate()){
         form.save();
-        // showDialog(
-        //   context: context, 
-        //   builder: (context) {
-        //     return AlertDialog(
-        //       title: const Text('تمام عدي'),
-        //       content: Text('اسم المستخدم: $_userName و كلمة السر: $_pass'),
-        //     );
-        //   });
+        showDialog(
+          context: context, 
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('تمام عدي', textDirection: TextDirection.rtl,),
+              content: Text('اسم المستخدم: $_userName و كلمة السر: $_pass',textDirection: TextDirection.rtl,),
+              actions: <Widget>[
+                TextButton(onPressed: () => Navigator.pop(context), child: const Text('ارجع')),
+                TextButton(onPressed: _goToHompage, child: const Text('كمل')),
+              ],
+            );
+          });
+      }
+    }
+
+    void _goToHompage(){
+        Navigator.pop(context);
         Navigator.push(
           context, 
-          MaterialPageRoute(builder: (context) => const Homepage())
+          MaterialPageRoute(builder: (context) => Homepage())
           );
-      }
     }
 
     @override
     Widget build(BuildContext context){
+
       return Scaffold(
         appBar: AppBar(
           title: const Text('سجل دخولك'),
@@ -52,14 +62,17 @@ class _LoginPageState extends State<LoginPage> {
               Image.asset('assets/church_logo.png',width: 150),
               Form(
                 key: _formKey,
-                child: Column(
+                child: Directionality(
+                  textDirection: TextDirection.rtl,
+                  child:
+                Column(
                 children: <Widget>[
                   TextFormField(
                     validator: (value) {
                       if(value != null && value.contains('.')){
                         return null;
                       }
-                      return 'اكتب اسم المستخدم بشكل صحيح';
+                      return 'اكتب اسم المستخدم بشكل صح';
                     },
                     onSaved: (newValue) => _userName = newValue,
                     decoration: const InputDecoration(
@@ -74,15 +87,21 @@ class _LoginPageState extends State<LoginPage> {
                       return 'اكتب كلمة السر';
                     },
                     onSaved: (newValue) => _pass = newValue,
+                    obscureText: true,
                     decoration: const InputDecoration(
                       labelText: 'كلمة السر'
                     ),
                   ),
+                  const SizedBox(height: 30),
                   ElevatedButton(
                     onPressed: _submit,
-                    child: const Text('دخول'))
+                    child: const Text('دخول')),
+                  const SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SignupPage())),
+                    child: const Text('اعمل حساب جديد'))
                 ],
-                ))
+                )))
             ],
           ),
           )),

@@ -1,5 +1,7 @@
+import 'package:church/screens/homepage.dart';
 import 'package:church/screens/login.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,8 +17,12 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xffdc143c)),
         useMaterial3: true,
+        textTheme: GoogleFonts.cairoTextTheme(
+          Theme.of(context).textTheme
+        )
       ),
-      home: true? const LoginPage() : const MyHomePage(title: 'كنيسة السيدة العذراء مريم'),
+      // check if there's token in shared preferences and if true open homepage else open login page
+      home: false? Homepage() : const LoginPage(),
     );
   }
 }
