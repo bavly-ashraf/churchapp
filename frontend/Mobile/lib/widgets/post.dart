@@ -20,6 +20,24 @@ class _PostState extends State<Post>{
       Card(
               child: Column(
                 children: <Widget>[
+                    const SizedBox(height: 10),
+                   Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                    const SizedBox(width: 10,),
+                      CircleAvatar(
+                        backgroundImage: widget.attachments != null && widget.attachments!.isNotEmpty? AssetImage(widget.attachments![0]) : const AssetImage('assets/church_logo.png'),
+                      ),
+                    const SizedBox(width: 10),
+                     const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text('user.name',textScaler: TextScaler.linear(1.2),style: TextStyle(fontWeight: FontWeight.bold),),
+                          Text('12:00pm')
+                        ],
+                      )
+                    ],
+                  ),
                   Text(
                     widget.body,
                     style: const TextStyle(fontSize: 20),

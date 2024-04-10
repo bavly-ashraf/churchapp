@@ -1,44 +1,96 @@
-import 'package:church/widgets/post.dart';
+import 'package:church/screens/announcements.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-class Homepage extends StatelessWidget {
-  Homepage({super.key});
 
-  final List<String> body = ['اي كلام للتجربة', 'تاني بوست'];
-  final List<String> attachments = ['assets/church_logo.png'];
+class Homepage extends StatefulWidget{
+  const Homepage({super.key});
 
-  void _onExit(bool didpop) {
-    if (didpop) {
-      const AlertDialog(title: Text('عايز اخرج'));
-    } else {
-      const AlertDialog(title: Text('مش عايز اخرج'));
-    }
-  }
+  @override
+  State<Homepage> createState() => _Homepage();
+
+}
+
+class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
+
+
+  late TabController controller = TabController(length: 2, vsync: this); 
+
+
 
   @override
   Widget build(BuildContext context) {
 
-    return PopScope(
+    void _onExit(bool didpop, BuildContext context) {
+    showDialog(context: context, builder: (BuildContext context) {
+      return Directionality(
+      textDirection: TextDirection.rtl,
+      child:AlertDialog(
+        title: const Text('خروج'),
+        content: const Text('متاكد انك عايز تخرج؟'),
+        actions: <Widget>[
+          TextButton(onPressed: ()=> SystemChannels.platform.invokeMethod('SystemNavigator.pop'), child: const Text('اه')),
+          TextButton(onPressed: ()=> Navigator.pop(context), child: const Text('لا'))
+        ],
+        )
+        );
+    });
+  }
+
+  void _Logout() {
+    showDialog(context: context, builder: (BuildContext context){
+      return Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+        title: const Text('تسجيل خروج'),
+        content: const Text('متاكد انك عايز تسجل خروج؟'),
+        actions: <Widget>[
+          TextButton(onPressed: (){
+            //don't forget to remove token from shared preferences
+            // Navigator.popUntil(context, ModalRoute.withName('/'));
+          } , child: const Text('اه')),
+          TextButton(onPressed: ()=> Navigator.pop(context), child: const Text('لا'))
+        ],
+        )
+        );
+    });
+  }
+    
+
+    return 
+      PopScope(
       canPop: false,
-      onPopInvoked: (didPop) => _onExit(didPop),
-      child: (Scaffold(
-        appBar: AppBar(
+      onPopInvoked: (didPop) => _onExit(didPop, context),
+      child: Scaffold(
+      appBar: AppBar(
           title: const Text('ازيك يا يوزر'),
           centerTitle: true,
           automaticallyImplyLeading: false,
+          actions: <Widget>[
+            IconButton(onPressed: _Logout, icon: const Icon(Icons.logout)),
+            const SizedBox(width: 10),
+          ],
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         ),
-        body: ListView.builder(
-          itemCount: body.length,
-          itemBuilder: (context, index) => Padding(
-            padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-            child: Post(
-              body: body[index],
-              attachments: attachments,
-              )
+        bottomNavigationBar: Material(
+          child: TabBar(
+            tabs: const <Tab>[
+              Tab(
+                icon: Icon(Icons.home),
+                text: 'التنبيهات',
+              ),
+              Tab(
+                icon: Icon(Icons.lock_clock),
+                text: 'حجز القاعات',
+              ),
+            ],
+            controller: controller,
             ),
         ),
-      )),
-    );
+        body: TabBarView(
+          controller: controller,
+          children: const <Widget>[Announcements(), Text('test')],
+        )
+        ));
   }
 }

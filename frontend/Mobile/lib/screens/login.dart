@@ -40,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.pop(context);
         Navigator.push(
           context, 
-          MaterialPageRoute(builder: (context) => Homepage())
+          MaterialPageRoute(builder: (context) => const Homepage())
           );
     }
 
@@ -72,7 +72,7 @@ class _LoginPageState extends State<LoginPage> {
                       if(value != null && value.contains('.')){
                         return null;
                       }
-                      return 'اكتب اسم المستخدم بشكل صح';
+                      return 'اكتب اسم المستخدم صح';
                     },
                     onSaved: (newValue) => _userName = newValue,
                     decoration: const InputDecoration(
