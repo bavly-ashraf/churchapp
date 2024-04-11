@@ -56,54 +56,56 @@ class _LoginPageState extends State<LoginPage> {
         body:  Center(
           child: Padding(
             padding: const EdgeInsets.all(40),
-            child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Image.asset('assets/church_logo.png',width: 150),
-              Form(
-                key: _formKey,
-                child: Directionality(
-                  textDirection: TextDirection.rtl,
-                  child:
-                Column(
-                children: <Widget>[
-                  TextFormField(
-                    validator: (value) {
-                      if(value != null && value.contains('.')){
-                        return null;
-                      }
-                      return 'اكتب اسم المستخدم صح';
-                    },
-                    onSaved: (newValue) => _userName = newValue,
-                    decoration: const InputDecoration(
-                      labelText: 'اسم المستخدم'
+            child: SingleChildScrollView(
+              child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Image.asset('assets/church_logo.png',width: 150),
+                Form(
+                  key: _formKey,
+                  child: Directionality(
+                    textDirection: TextDirection.rtl,
+                    child:
+                  Column(
+                  children: <Widget>[
+                    TextFormField(
+                      validator: (value) {
+                        if(value != null && value.contains('.')){
+                          return null;
+                        }
+                        return 'اكتب اسم المستخدم صح';
+                      },
+                      onSaved: (newValue) => _userName = newValue,
+                      decoration: const InputDecoration(
+                        labelText: 'اسم المستخدم'
+                      ),
                     ),
-                  ),
-                     TextFormField(
-                    validator: (value) {
-                      if(value != null && value.isNotEmpty){
-                        return null;
-                      }
-                      return 'اكتب كلمة السر';
-                    },
-                    onSaved: (newValue) => _pass = newValue,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'كلمة السر'
+                       TextFormField(
+                      validator: (value) {
+                        if(value != null && value.isNotEmpty){
+                          return null;
+                        }
+                        return 'اكتب كلمة السر';
+                      },
+                      onSaved: (newValue) => _pass = newValue,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'كلمة السر'
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 30),
-                  ElevatedButton(
-                    onPressed: _submit,
-                    child: const Text('دخول')),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SignupPage())),
-                    child: const Text('اعمل حساب جديد'))
-                ],
-                )))
-            ],
-          ),
+                    const SizedBox(height: 30),
+                    ElevatedButton(
+                      onPressed: _submit,
+                      child: const Text('دخول')),
+                    const SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SignupPage())),
+                      child: const Text('اعمل حساب جديد'))
+                  ],
+                  )))
+              ],
+                        ),
+            ),
           )),
       );
     }

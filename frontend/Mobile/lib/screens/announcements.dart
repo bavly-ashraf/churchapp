@@ -6,8 +6,22 @@ class Announcements extends StatelessWidget{
 
   @override
   Widget build(BuildContext context){
-      final List<String> body = ['اي كلام للتجربة', 'تاني بوست'];
+      final List<String> body = ['اي كلام للتجربة', 'تاني بوست', 'بإسم الآب والابن والروح القدس اله واحد امين'];
       final List<String> attachments = ['assets/church_logo.png'];
+
+      Future<void> _showNewPostModal() {
+            return showModalBottomSheet(context: context, builder: (BuildContext context) {
+              return const SizedBox(
+                height: 600,
+                child: Center(
+                  child: Column(
+                    children: <Widget>[
+                      Text('test')
+                  ]),
+                  ),
+              );
+            });
+      }
 
     return(
     Scaffold(
@@ -22,10 +36,10 @@ class Announcements extends StatelessWidget{
             ),
         ),
         // don't forget to show it for admins only!
-        floatingActionButton: const FloatingActionButton(
-          onPressed: null,
-          shape: CircleBorder(),
-          child: Icon(Icons.add),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _showNewPostModal,
+          // shape: CircleBorder(),
+          child: const Icon(Icons.add),
           ),
         // bottomNavigationBar: BottomNavigationBar(
         //   items: const <BottomNavigationBarItem>[

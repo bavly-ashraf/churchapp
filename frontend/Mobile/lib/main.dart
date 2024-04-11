@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
         )
       ),
       // check if there's token in shared preferences and if true open homepage else open login page
-      home: false? Homepage() : const LoginPage(),
+      home: false? const Homepage() : const LoginPage(),
     );
   }
 }

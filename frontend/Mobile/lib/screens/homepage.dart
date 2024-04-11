@@ -1,4 +1,5 @@
 import 'package:church/screens/announcements.dart';
+import 'package:church/screens/halls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -89,7 +90,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
         ),
         body: TabBarView(
           controller: controller,
-          children: const <Widget>[Announcements(), Text('test')],
+          children: <Widget>[const Announcements(), Halls()],
         )
         ));
   }
