@@ -60,7 +60,7 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Image.asset('assets/church_logo.png',width: 150),
+                Image.asset('assets/images/church_logo.png',width: 150),
                 Form(
                   key: _formKey,
                   child: Directionality(

@@ -7,9 +7,9 @@ class Announcements extends StatelessWidget{
   @override
   Widget build(BuildContext context){
       final List<String> body = ['اي كلام للتجربة', 'تاني بوست', 'بإسم الآب والابن والروح القدس اله واحد امين'];
-      final List<String> attachments = ['assets/church_logo.png'];
+      final List<String> attachments = ['assets/images/church_logo.png'];
 
-      Future<void> _showNewPostModal() {
+      Future<void> showNewPostModal() {
             return showModalBottomSheet(context: context, builder: (BuildContext context) {
               return const SizedBox(
                 height: 600,
@@ -37,7 +37,7 @@ class Announcements extends StatelessWidget{
         ),
         // don't forget to show it for admins only!
         floatingActionButton: FloatingActionButton(
-          onPressed: _showNewPostModal,
+          onPressed: showNewPostModal,
           // shape: CircleBorder(),
           child: const Icon(Icons.add),
           ),

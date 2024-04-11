@@ -29,7 +29,7 @@ class _PostState extends State<Post> {
                 backgroundImage:
                     widget.attachments != null && widget.attachments!.isNotEmpty
                         ? AssetImage(widget.attachments![0])
-                        : const AssetImage('assets/church_logo.png'),
+                        : const AssetImage('assets/images/church_logo.png'),
               ),
               const SizedBox(width: 10),
               const Column(

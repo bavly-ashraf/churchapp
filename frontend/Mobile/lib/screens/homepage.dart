@@ -22,7 +22,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
 
-    void _onExit(bool didpop, BuildContext context) {
+    void onExit(bool didpop, BuildContext context) {
     showDialog(context: context, builder: (BuildContext context) {
       return Directionality(
       textDirection: TextDirection.rtl,
@@ -38,7 +38,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
     });
   }
 
-  void _Logout() {
+  void logout() {
     showDialog(context: context, builder: (BuildContext context){
       return Directionality(
         textDirection: TextDirection.rtl,
@@ -61,14 +61,14 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
     return 
       PopScope(
       canPop: false,
-      onPopInvoked: (didPop) => _onExit(didPop, context),
+      onPopInvoked: (didPop) => onExit(didPop, context),
       child: Scaffold(
       appBar: AppBar(
           title: const Text('ازيك يا يوزر'),
           centerTitle: true,
           automaticallyImplyLeading: false,
           actions: <Widget>[
-            IconButton(onPressed: _Logout, icon: const Icon(Icons.logout)),
+            IconButton(onPressed: logout, icon: const Icon(Icons.logout)),
             const SizedBox(width: 10),
           ],
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,

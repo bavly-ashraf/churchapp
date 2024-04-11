@@ -8,6 +8,21 @@ class Halls extends StatelessWidget{
 
     @override
     Widget build(BuildContext context){
+      
+      Future<void> showNewHallModal() {
+            return showModalBottomSheet(context: context, builder: (BuildContext context) {
+              return const SizedBox(
+                height: 200,
+                child: Center(
+                  child: Column(
+                    children: <Widget>[
+                      Text('test')
+                  ]),
+                  ),
+              );
+            });
+      }
+
       return Scaffold(
         body: Directionality(
           textDirection: TextDirection.rtl,
@@ -21,7 +36,7 @@ class Halls extends StatelessWidget{
         ),
         // don't forget to show this for admin only!!
         floatingActionButton: FloatingActionButton(
-          onPressed: () => 0,
+          onPressed: showNewHallModal,
           child: const Icon(Icons.add),
         ),
       );

@@ -1,3 +1,4 @@
+import 'package:church/screens/reservations.dart';
 import 'package:flutter/material.dart';
 
 class Hall extends StatelessWidget{
@@ -7,8 +8,13 @@ class Hall extends StatelessWidget{
 
     @override
     Widget build(BuildContext context){
+      void openHallReservation(){
+        Feedback.forTap(context);
+        Navigator.push(context, MaterialPageRoute(builder: (context)=> Reservations(hallName: hallName)));
+      }
+
       return GestureDetector(
-        onTap: () => print('working $hallName!!'),
+        onTap: openHallReservation,
         child: (
           Card(
               child: Column(
