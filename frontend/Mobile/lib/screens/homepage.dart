@@ -13,7 +13,7 @@ class Homepage extends StatefulWidget {
 class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
   late TabController controller = TabController(length: 2, vsync: this);
   // check user role (user || admin)
-  bool showFab = 'userRole'.isEmpty? false: true;
+  bool showFab = 'userRole'.isEmpty ? false : true;
 
   Future<void> createNew() {
     switch (controller.index) {
@@ -43,15 +43,14 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
     throw const FormatException('Error: modal not found');
   }
 
-  Widget createNewAnnouncement(){
+  Widget createNewAnnouncement() {
     return const Padding(
       padding: EdgeInsets.all(10),
       child: Column(
-          children: <Widget>[
-            Text('new announcement'),
-            Text('test'),
-            
-          ],
+        children: <Widget>[
+          Text('new announcement'),
+          Text('test'),
+        ],
       ),
     );
   }
@@ -93,7 +92,9 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
                     TextButton(
                         onPressed: () {
                           //don't forget to remove token from shared preferences
-                          // Navigator.popUntil(context, ModalRoute.withName('/'));
+                          Navigator.pop(context);
+                          Navigator.pushNamedAndRemoveUntil(
+                              context, '/', (route) => false);
                         },
                         child: const Text('اه')),
                     TextButton(
@@ -119,12 +120,13 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
               backgroundColor: Theme.of(context).colorScheme.inversePrimary,
             ),
             // don't forget to show it for admins only!
-            floatingActionButton: showFab?
-            FloatingActionButton(
-              onPressed: createNew,
-              shape: const CircleBorder(),
-              child: const Icon(Icons.add),
-            ) : null,
+            floatingActionButton: showFab
+                ? FloatingActionButton(
+                    onPressed: createNew,
+                    shape: const CircleBorder(),
+                    child: const Icon(Icons.add),
+                  )
+                : null,
             floatingActionButtonLocation:
                 FloatingActionButtonLocation.centerDocked,
             bottomNavigationBar: Material(
