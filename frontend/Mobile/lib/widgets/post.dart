@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 class Post extends StatefulWidget {
   const Post({super.key, required this.body, this.attachments});
@@ -59,7 +58,7 @@ class _PostState extends State<Post> {
           Align(
             alignment: Alignment.centerRight,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+              padding: const EdgeInsets.fromLTRB(10, 10, 10, 40),
               child: Text(
                 widget.body,
                 style: const TextStyle(fontSize: 20),
@@ -67,20 +66,20 @@ class _PostState extends State<Post> {
               ),
             ),
           ),
-          widget.attachments != null && widget.attachments!.isNotEmpty
-              ? Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                  child: Row(
-                      textDirection: TextDirection.rtl,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Image.asset(
-                          widget.attachments![0],
-                          width: 100,
-                        ),
-                      ]),
-                )
-              : Container(),
+          // widget.attachments != null && widget.attachments!.isNotEmpty
+          //     ? Padding(
+          //         padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+          //         child: Row(
+          //             textDirection: TextDirection.rtl,
+          //             mainAxisAlignment: MainAxisAlignment.center,
+          //             children: <Widget>[
+          //               Image.asset(
+          //                 widget.attachments![0],
+          //                 width: 100,
+          //               ),
+          //             ]),
+          //       )
+          //     : Container(),
           const Divider(
             indent: 10,
             endIndent: 10,

@@ -65,6 +65,7 @@ class _LoginPageState extends State<LoginPage> {
         if (decodedResponse.containsKey('token')){
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('token', decodedResponse['token']);
+          await prefs.setString('userData',jsonEncode(decodedResponse['user']));
           _goToHompage();
         }
       } else if(response.statusCode == 404){

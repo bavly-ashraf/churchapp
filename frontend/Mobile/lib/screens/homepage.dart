@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:church/screens/announcements.dart';
 import 'package:church/screens/halls.dart';
 import 'package:flutter/material.dart';
@@ -13,8 +15,30 @@ class Homepage extends StatefulWidget {
 
 class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
   late TabController controller = TabController(length: 2, vsync: this);
+  dynamic userData;
+  String userName = 'ازيك';
+  String role = 'user';
   // check user role (user || admin)
-  bool showFab = 'userRole'.isEmpty ? false : true;
+  bool showFab = false;
+
+  @override
+  void initState(){
+    super.initState();
+    getUserData();
+  }
+
+  Future<void> getUserData() async{
+    final prefs = await SharedPreferences.getInstance();
+    userData = jsonDecode(prefs.getString('userData')!);
+    setState(() {
+      userName = userData['username'];
+      role = userData['role'];
+      print(role);
+      showFab = (role == 'user') ? false : true;
+    });
+    print(userName);
+    print(userData);
+  }
 
   Future<void> createNew() {
     switch (controller.index) {
@@ -83,6 +107,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
     Future<void> removeToken() async {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('token');
+      await prefs.remove('userData');
     }
 
     void logout() {
@@ -98,10 +123,10 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
                     TextButton(
                         onPressed: () {
                           //don't forget to remove token from shared preferences
-                          removeToken();
                           Navigator.pop(context);
                           Navigator.pushNamedAndRemoveUntil(
                               context, '/', (route) => false);
+                          removeToken();
                         },
                         child: const Text('اه')),
                     TextButton(
@@ -117,7 +142,9 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
         onPopInvoked: (didPop) => onExit(didPop, context),
         child: Scaffold(
             appBar: AppBar(
-              title: const Text('ازيك يا يوزر'),
+              // title: Text('ازيك ${userName == null? '':'يا $userName'}'),
+              title: Text(userName),
+              // title: const Text('ازيك يا يوزر'),
               centerTitle: true,
               automaticallyImplyLeading: false,
               actions: <Widget>[
