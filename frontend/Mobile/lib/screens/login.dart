@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:church/screens/homepage.dart';
 import 'package:church/screens/signup.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -11,6 +15,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
+  final url = Uri.parse('http://localhost:3000/user/login');
 
   String? _userName;
   String? _pass;
@@ -19,31 +24,89 @@ class _LoginPageState extends State<LoginPage> {
     final form = _formKey.currentState;
     if (form != null && form.validate()) {
       form.save();
-      showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text(
-                'تمام عدي',
-                textDirection: TextDirection.rtl,
-              ),
-              content: Text(
-                'اسم المستخدم: $_userName و كلمة السر: $_pass',
-                textDirection: TextDirection.rtl,
-              ),
-              actions: <Widget>[
-                TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('ارجع')),
-                TextButton(onPressed: _goToHompage, child: const Text('كمل')),
-              ],
-            );
-          });
+      login();
+      // showDialog(
+      //     context: context,
+      //     builder: (context) {
+      //       return AlertDialog(
+      //         title: const Text(
+      //           'تمام عدي',
+      //           textDirection: TextDirection.rtl,
+      //         ),
+      //         content: Text(
+      //           'اسم المستخدم: $_userName و كلمة السر: $_pass',
+      //           textDirection: TextDirection.rtl,
+      //         ),
+      //         actions: <Widget>[
+      //           TextButton(
+      //               onPressed: () => Navigator.pop(context),
+      //               child: const Text('ارجع')),
+      //           TextButton(onPressed: _goToHompage, child: const Text('كمل')),
+      //         ],
+      //       );
+      //     });
+    }
+  }
+
+  Future<void> login() async {
+    try {
+      final response = await http.post(
+        url,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{
+          'username': _userName!,
+          'password': _pass!,
+        }),
+      );
+      if (response.statusCode == 200) {
+        final decodedResponse = jsonDecode(response.body);
+        if (decodedResponse.containsKey('token')){
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('token', decodedResponse['token']);
+          _goToHompage();
+        }
+      } else if(response.statusCode == 404){
+                  if (mounted) {
+            showDialog(
+                context: context,
+                builder: (context) => Directionality(
+                      textDirection: TextDirection.rtl,
+                      child: AlertDialog(
+                        title: const Text('حصل مشكلة'),
+                        content: const Text('بيانات غلط'),
+                        actions: <Widget>[
+                          TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('تمام'))
+                        ],
+                      ),
+                    ));
+          }
+      }
+    } catch (e) {
+      print(e);
+      if (mounted) {
+        showDialog(
+            context: context,
+            builder: (context) => Directionality(
+                  textDirection: TextDirection.rtl,
+                  child: AlertDialog(
+                    title: const Text('حصل مشكلة'),
+                    content: const Text('حصل مشكلة في السيرفر'),
+                    actions: <Widget>[
+                      TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('تمام'))
+                    ],
+                  ),
+                ));
+      }
     }
   }
 
   void _goToHompage() {
-    Navigator.pop(context);
     Navigator.push(
         context, MaterialPageRoute(builder: (context) => const Homepage()));
   }

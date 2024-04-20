@@ -9,8 +9,12 @@ require('dotenv').config();
 
 const signup = async (req,res)=>{
     // const {usename, email, password, mobile, profilepic, bio} = req.body;
-    const { secure_url } = await cloudinary.v2.uploader.upload(req.file.path , {folder: 'profilePics'});
-    const createdUser = await User.create({...req.body, profilepic: secure_url});
+    let imgUrl;
+    if(req.file){
+        const { secure_url } = await cloudinary.v2.uploader.upload(req.file.path , {folder: 'profilePics'});
+        imgUrl = secure_url;
+    }
+    const createdUser = await User.create({...req.body, profilepic: imgUrl});
     createdUser.password = undefined;
     res.status(201).json({message: 'success', createdUser});
 };

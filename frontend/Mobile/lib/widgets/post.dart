@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 class Post extends StatefulWidget {
   const Post({super.key, required this.body, this.attachments});
@@ -20,29 +21,39 @@ class _PostState extends State<Post> {
         children: <Widget>[
           const SizedBox(height: 10),
           Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              const SizedBox(
-                width: 10,
-              ),
-              CircleAvatar(
-                backgroundImage:
-                    widget.attachments != null && widget.attachments!.isNotEmpty
-                        ? AssetImage(widget.attachments![0])
-                        : const AssetImage('assets/images/church_logo.png'),
-              ),
-              const SizedBox(width: 10),
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    'user.name',
-                    textScaler: TextScaler.linear(1.2),
-                    style: TextStyle(fontWeight: FontWeight.bold),
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                children: [
+                  Row(
+                    children: <Widget>[
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      CircleAvatar(
+                        backgroundImage: widget.attachments != null &&
+                                widget.attachments!.isNotEmpty
+                            ? AssetImage(widget.attachments![0])
+                            : const AssetImage('assets/images/church_logo.png'),
+                      ),
+                      const SizedBox(width: 10),
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            'user.name',
+                            textScaler: TextScaler.linear(1.2),
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text('12:00pm')
+                        ],
+                      )
+                    ],
                   ),
-                  Text('12:00pm')
                 ],
-              )
+              ),
+              // visible only to post creator
+              const IconButton(onPressed: null, icon: Icon(Icons.delete))
             ],
           ),
           Align(
@@ -74,6 +85,16 @@ class _PostState extends State<Post> {
             indent: 10,
             endIndent: 10,
           ),
+          // GestureDetector(
+          //   onTap: () => print('working!!!'),
+          //   child: const Padding(
+          //       padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+          //       child: Row(
+          //         textDirection: TextDirection.rtl,
+          //         mainAxisAlignment: MainAxisAlignment.start,
+          //         children: <Widget>[Text('5'),Text('تفاعل ')],
+          //       )),
+          // ),
           Directionality(
             textDirection: TextDirection.rtl,
             child: Padding(
@@ -82,13 +103,29 @@ class _PostState extends State<Post> {
                   textDirection: TextDirection.rtl,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    IconButton(onPressed: () => 0, icon: const Icon(Icons.thumb_up_outlined),color: Theme.of(context).primaryColor),
+                    IconButton(
+                        onPressed: () => 0,
+                        icon: const Icon(Icons.thumb_up_outlined),
+                        color: Theme.of(context).primaryColor,
+                        tooltip: 'عجبني'),
                     const SizedBox(width: 10),
-                    IconButton(onPressed: () => 0, icon: const Icon(Icons.favorite_border_outlined),color: Theme.of(context).primaryColor),
+                    IconButton(
+                        onPressed: () => 0,
+                        icon: const Icon(Icons.favorite_border_outlined),
+                        color: Theme.of(context).primaryColor,
+                        tooltip: 'عجبني اوي'),
                     const SizedBox(width: 10),
-                    IconButton(onPressed: () => 0, icon: const Icon(Icons.thumb_down_outlined),color: Theme.of(context).primaryColor),
+                    IconButton(
+                        onPressed: () => 0,
+                        icon: const Icon(Icons.thumb_down_outlined),
+                        color: Theme.of(context).primaryColor,
+                        tooltip: 'مش موافق'),
                     const SizedBox(width: 10),
-                    IconButton(onPressed: () => 0, icon: const Icon(Icons.heart_broken_outlined),color: Theme.of(context).primaryColor),
+                    IconButton(
+                        onPressed: () => 0,
+                        icon: const Icon(Icons.heart_broken_outlined),
+                        color: Theme.of(context).primaryColor,
+                        tooltip: 'حزين'),
                     // ElevatedButton.icon(
                     //     onPressed: () => 0,
                     //     icon: const Icon(Icons.thumb_up_outlined),

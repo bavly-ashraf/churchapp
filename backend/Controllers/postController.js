@@ -1,4 +1,5 @@
 const Post = require('../Models/Posts');
+const AppError = require('../Utils/AppError');
 const cloudinary = require('../Utils/cloudinary');
 
 const createPost = async (req,res,next) => {
@@ -17,14 +18,17 @@ res.status(201).json({message:'success',createdPost})
 const editPost = async (req,res,next) => {
     const {id} = req.params;
     const {body} = req.body;
-    const post = await Post.findByIdAndUpdate(id,{body},{new:true});
-    res.status(200).json({message:'success',post});
+    const post = await Post.findById(id);
+    if(req.user.id != post.creator.toString()) return next(new AppError('Only post creator can edit it', 403));
+    const editedPost = await Post.findByIdAndUpdate(id,{body},{new:true});
+    res.status(200).json({message:'success',editedPost});
 };
 
 
 const getAllPosts = async (req,res,next) => {
-    const allPosts = await Post.find();
-    res.status(200).json({message:'success',allPosts});
+    const {skip,limit} = req.query;
+    const allPosts = await Post.find().skip(skip).limit(limit);
+    res.status(200).json({message:'success',allPosts,count:allPosts.length});
 };
 
 const getPostByID = async (req,res,next) => {
@@ -35,8 +39,10 @@ const getPostByID = async (req,res,next) => {
 
 const deletePost = async (req,res,next) => {
     const {id} = req.params;
-    const post = await Post.findByIdAndDelete(id);
-    res.status(200).json({message:'success',post});
+    const post = await Post.findById(id);
+    if(req.user.id != post.creator.toString()) return next(new AppError('Only post creator can delete it', 403));
+    const deletedPost = await Post.findByIdAndDelete(id);
+    res.status(200).json({message:'success',deletedPost});
 }
 
 module.exports = {createPost, getAllPosts, editPost, getPostByID, deletePost};

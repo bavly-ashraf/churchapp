@@ -13,7 +13,7 @@ class Reservations extends StatefulWidget {
 
 class _Reservations extends State<Reservations> {
   late final ValueNotifier<List<Event>> _selectedEvents;
-  CalendarFormat _calendarFormat = CalendarFormat.month;
+  CalendarFormat _calendarFormat = CalendarFormat.week;
   RangeSelectionMode _rangeSelectionMode = RangeSelectionMode
       .toggledOff; // Can be toggled on/off by longpressing a date
   DateTime? _selectedDay;
@@ -103,13 +103,17 @@ class _Reservations extends State<Reservations> {
         title: Text(widget.hallName),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
+        actions: const <Widget>[
+                IconButton(onPressed: null, icon:  Icon(Icons.pending_actions), tooltip: 'متابعة الحجوزات',),
+                 SizedBox(width: 10),
+              ],
       ),
       body: Container(
           alignment: Alignment.center,
           margin: const EdgeInsets.all(10),
           child: Column(children: [
             Text(
-              'مواعيد الحجز في ${widget.hallName}',
+              'مواعيد الحجز في ${widget.hallName} (${_calendarFormat.name == 'month'? 'الشهر': _calendarFormat.name == 'week'? 'الاسبوع': 'النص شهر'} دة)',
               textDirection: TextDirection.rtl,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
@@ -171,6 +175,7 @@ class _Reservations extends State<Reservations> {
           ])),
       floatingActionButton: FloatingActionButton(
         onPressed: showNewReservationModal,
+        tooltip: 'حجز ميعاد جديد',
         child: const Icon(Icons.add),
       ),
     );

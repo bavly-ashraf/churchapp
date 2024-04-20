@@ -2,6 +2,7 @@ import 'package:church/screens/announcements.dart';
 import 'package:church/screens/halls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -79,6 +80,11 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
           });
     }
 
+    Future<void> removeToken() async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('token');
+    }
+
     void logout() {
       showDialog(
           context: context,
@@ -92,6 +98,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
                     TextButton(
                         onPressed: () {
                           //don't forget to remove token from shared preferences
+                          removeToken();
                           Navigator.pop(context);
                           Navigator.pushNamedAndRemoveUntil(
                               context, '/', (route) => false);
@@ -114,7 +121,11 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
               centerTitle: true,
               automaticallyImplyLeading: false,
               actions: <Widget>[
-                IconButton(onPressed: logout, icon: const Icon(Icons.logout)),
+                IconButton(
+                  onPressed: logout,
+                  icon: const Icon(Icons.logout),
+                  tooltip: 'تسجيل الخروج',
+                ),
                 const SizedBox(width: 10),
               ],
               backgroundColor: Theme.of(context).colorScheme.inversePrimary,

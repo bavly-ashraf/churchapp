@@ -2,13 +2,22 @@ import 'package:church/screens/homepage.dart';
 import 'package:church/screens/login.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(const MyApp());
+
+Future<void> main() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+  runApp(MyApp(token: token,));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+   const MyApp({super.key, this.token});
+
+
+  final String? token;
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +31,7 @@ class MyApp extends StatelessWidget {
         )
       ),
       // check if there's token in shared preferences and if true open homepage else open login page
-      home: ('token'.isEmpty)? const Homepage() : const LoginPage(),
+      home: (token == null || token!.isEmpty)? const LoginPage() : const Homepage(),
     );
   }
 }

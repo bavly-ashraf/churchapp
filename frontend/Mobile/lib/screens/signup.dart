@@ -1,5 +1,8 @@
-import 'package:church/screens/homepage.dart';
+import 'dart:convert';
+import 'package:church/screens/login.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -10,42 +13,141 @@ class SignupPage extends StatefulWidget {
 
 class _SignupPageState extends State<SignupPage> {
   final _formKey = GlobalKey<FormState>();
+  final url = Uri.parse('http://localhost:3000/user/signup');
 
   String? _userName;
+  String? _email;
+  String? _mobile;
   String? _pass;
-  String? _churchCode;
+  // String? _churchCode;
 
   void _createNewAccount() {
     final form = _formKey.currentState;
     if (form != null && form.validate()) {
       form.save();
-      showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text(
-                'تمام عدي',
-                textDirection: TextDirection.rtl,
-              ),
-              content: Text(
-                'اسم المستخدم: $_userName و كلمة السر: $_pass وكود الكنيسة: $_churchCode',
-                textDirection: TextDirection.rtl,
-              ),
-              actions: <Widget>[
-                TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('ارجع')),
-                TextButton(onPressed: _goToHompage, child: const Text('كمل')),
-              ],
-            );
-          });
+      signUp();
+      // showDialog(
+      //     context: context,
+      //     builder: (context) {
+      //       return AlertDialog(
+      //         title: const Text(
+      //           'تمام عدي',
+      //           textDirection: TextDirection.rtl,
+      //         ),
+      //         content: Text(
+      //           'اسم المستخدم: $_userName و كلمة السر: $_pass والموبايل: $_mobile والايميل: $_email',
+      //           textDirection: TextDirection.rtl,
+      //         ),
+      //         actions: <Widget>[
+      //           TextButton(
+      //               onPressed: () => Navigator.pop(context),
+      //               child: const Text('ارجع')),
+      //           TextButton(onPressed: _goToHompage, child: const Text('كمل')),
+      //         ],
+      //       );
+      //     });
     }
   }
 
-  void _goToHompage() {
+  Future<void> signUp() async {
+    try {
+      final response = await http.post(
+        url,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{
+          'username': _userName!,
+          'email': _email!,
+          'password': _pass!,
+          'mobile': _mobile!,
+        }),
+      );
+      if (response.statusCode == 201) {
+        if (mounted) {
+          showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: const Text(
+                    'الحساب اتعمل',
+                    textDirection: TextDirection.rtl,
+                  ),
+                  content: const Text(
+                    'من فضلك سجل دخول بحسابك',
+                    textDirection: TextDirection.rtl,
+                  ),
+                  actions: <Widget>[
+                    TextButton(onPressed: _goToLogin, child: const Text('كمل')),
+                  ],
+                );
+              });
+        }
+      } else {
+        final decodedResponse = jsonDecode(response.body);
+        if (decodedResponse.containsKey('message') &&
+            decodedResponse['message']
+                .toString()
+                .contains('duplicate key error')) {
+          if (mounted) {
+            showDialog(
+                context: context,
+                builder: (context) => Directionality(
+                  textDirection: TextDirection.rtl,
+                  child: AlertDialog(
+                        title: const Text('حصل مشكلة'),
+                        content: const Text('الحساب دة موجود فعلا'),
+                        actions: <Widget>[
+                          TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('تمام'))
+                        ],
+                      ),
+                ));
+          }
+        } else {
+          if (mounted) {
+            showDialog(
+                context: context,
+                builder: (context) => Directionality(
+                      textDirection: TextDirection.rtl,
+                      child: AlertDialog(
+                        title: const Text('حصل مشكلة'),
+                        content: const Text('حصل مشكلة في السيرفر'),
+                        actions: <Widget>[
+                          TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('تمام'))
+                        ],
+                      ),
+                    ));
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+            context: context,
+            builder: (context) => Directionality(
+                  textDirection: TextDirection.rtl,
+                  child: AlertDialog(
+                    title: const Text('حصل مشكلة'),
+                    content: const Text('حصل مشكلة في السيرفر'),
+                    actions: <Widget>[
+                      TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('تمام'))
+                    ],
+                  ),
+                ));
+      }
+    }
+  }
+
+  void _goToLogin() {
     Navigator.pop(context);
     Navigator.push(
-        context, MaterialPageRoute(builder: (context) => const Homepage()));
+        context, MaterialPageRoute(builder: (context) => const LoginPage()));
   }
 
   @override
@@ -73,7 +175,7 @@ class _SignupPageState extends State<SignupPage> {
                           TextFormField(
                             validator: (value) {
                               if (value != null && value.isNotEmpty) {
-                                if(!value.contains('.')){
+                                if (!value.contains('.')) {
                                   return 'اكتب اسم المستخدم صح';
                                 }
                                 return null;
@@ -83,6 +185,42 @@ class _SignupPageState extends State<SignupPage> {
                             onSaved: (newValue) => _userName = newValue,
                             decoration: const InputDecoration(
                                 labelText: 'اسم المستخدم'),
+                          ),
+                          TextFormField(
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (value) {
+                              if (value != null && value.isNotEmpty) {
+                                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                                    .hasMatch(value)) {
+                                  return 'اكتب الايميل صح';
+                                }
+                                return null;
+                              }
+                              return 'اكتب الايميل';
+                            },
+                            onSaved: (newValue) => _email = newValue,
+                            decoration:
+                                const InputDecoration(labelText: 'الايميل'),
+                          ),
+                          TextFormField(
+                            keyboardType: TextInputType.phone,
+                            inputFormatters: <TextInputFormatter>[
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
+                            validator: (value) {
+                              if (value != null && value.isNotEmpty) {
+                                if (!RegExp(
+                                        r'^(\+201|01|00201)[0-2,5]{1}[0-9]{8}')
+                                    .hasMatch(value)) {
+                                  return 'اكتب رقم الموبايل صح';
+                                }
+                                return null;
+                              }
+                              return 'اكتب رقم الموبايل';
+                            },
+                            onSaved: (newValue) => _mobile = newValue,
+                            decoration: const InputDecoration(
+                                labelText: 'رقم الموبايل'),
                           ),
                           TextFormField(
                             validator: (value) {
@@ -96,17 +234,17 @@ class _SignupPageState extends State<SignupPage> {
                             decoration:
                                 const InputDecoration(labelText: 'كلمة السر'),
                           ),
-                          TextFormField(
-                            validator: (value) {
-                              if (value != null && value.isNotEmpty) {
-                                return null;
-                              }
-                              return 'اكتب كود الكنيسة';
-                            },
-                            onSaved: (newValue) => _churchCode = newValue,
-                            decoration:
-                                const InputDecoration(labelText: 'كود الكنيسة'),
-                          ),
+                          // TextFormField(
+                          //   validator: (value) {
+                          //     if (value != null && value.isNotEmpty) {
+                          //       return null;
+                          //     }
+                          //     return 'اكتب كود الكنيسة';
+                          //   },
+                          //   onSaved: (newValue) => _churchCode = newValue,
+                          //   decoration:
+                          //       const InputDecoration(labelText: 'كود الكنيسة'),
+                          // ),
                           const SizedBox(height: 30),
                           ElevatedButton(
                               onPressed: _createNewAccount,
