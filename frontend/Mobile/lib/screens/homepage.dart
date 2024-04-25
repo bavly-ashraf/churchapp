@@ -4,6 +4,7 @@ import 'package:church/screens/announcements.dart';
 import 'package:church/screens/halls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Homepage extends StatefulWidget {
@@ -14,30 +15,90 @@ class Homepage extends StatefulWidget {
 }
 
 class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
+  //tab navigation variables
   late TabController controller = TabController(length: 2, vsync: this);
+
+  //new announcement variables
+  final _newAnnounceFormKey = GlobalKey<FormState>();
+  String? _newAnnounce;
+
+  //sharedPref variables
   dynamic userData;
+  String? userToken;
   String userName = 'ازيك';
   String role = 'user';
+
   // check user role (user || admin)
   bool showFab = false;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     getUserData();
   }
 
-  Future<void> getUserData() async{
+  Future<void> getUserData() async {
     final prefs = await SharedPreferences.getInstance();
+    userToken = prefs.getString('token');
     userData = jsonDecode(prefs.getString('userData')!);
     setState(() {
-      userName = userData['username'];
+      userName = '${userData['username']} ازيك يا';
       role = userData['role'];
-      print(role);
       showFab = (role == 'user') ? false : true;
     });
-    print(userName);
-    print(userData);
+  }
+
+  Future<void> _uploadPost() async {
+    final form = _newAnnounceFormKey.currentState;
+    if (form != null && form.validate() && userToken != null) {
+      form.save();
+      try {
+        final response = await http.post(
+            Uri.parse('http://localhost:3000/post'),
+            headers: <String, String>{
+              'Content-Type': 'application/json; charset=UTF-8',
+              'Authorization': userToken!
+            },
+            body: jsonEncode(<String, String>{'body': _newAnnounce!}));
+        if (response.statusCode == 201 && mounted) {
+          Navigator.pop(context);
+        } else {
+          if (mounted) {
+            showDialog(
+                context: context,
+                builder: (context) => Directionality(
+                      textDirection: TextDirection.rtl,
+                      child: AlertDialog(
+                        title: const Text('حصل مشكلة'),
+                        content: const Text('حصل مشكلة في السيرفر'),
+                        actions: <Widget>[
+                          TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('تمام'))
+                        ],
+                      ),
+                    ));
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          showDialog(
+              context: context,
+              builder: (context) => Directionality(
+                    textDirection: TextDirection.rtl,
+                    child: AlertDialog(
+                      title: const Text('حصل مشكلة'),
+                      content: const Text('حصل مشكلة في السيرفر'),
+                      actions: <Widget>[
+                        TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('تمام'))
+                      ],
+                    ),
+                  ));
+        }
+      }
+    }
   }
 
   Future<void> createNew() {
@@ -47,7 +108,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
             context: context,
             builder: (BuildContext context) {
               return SizedBox(
-                height: 600,
+                height: 200,
                 child: Center(
                   child: createNewAnnouncement(),
                 ),
@@ -69,13 +130,48 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
   }
 
   Widget createNewAnnouncement() {
-    return const Padding(
-      padding: EdgeInsets.all(10),
-      child: Column(
-        children: <Widget>[
-          Text('new announcement'),
-          Text('test'),
-        ],
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          children: <Widget>[
+            Text(
+              'تنبيه جديد',
+              style: TextStyle(
+                  fontSize: 25, color: Theme.of(context).primaryColor),
+            ),
+            Padding(
+                padding: const EdgeInsets.all(10),
+                child: Directionality(
+                    textDirection: TextDirection.rtl,
+                    child: Form(
+                      key: _newAnnounceFormKey,
+                      child: Column(
+                        children: <Widget>[
+                          TextFormField(
+                            validator: (value) {
+                              if (value != '') {
+                                return null;
+                              }
+                              return 'من فضلك اكتب تنبيه';
+                            },
+                            onSaved: (newAnnounce) =>
+                                _newAnnounce = newAnnounce,
+                            decoration: const InputDecoration(
+                              hintText: 'اكتب تنبيه جديد',
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          ElevatedButton(
+                              onPressed: _uploadPost,
+                              child: const Text('نشر التنبيه'))
+                        ],
+                      ),
+                    ))),
+          ],
+        ),
       ),
     );
   }
@@ -122,10 +218,10 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
                   actions: <Widget>[
                     TextButton(
                         onPressed: () {
-                          //don't forget to remove token from shared preferences
                           Navigator.pop(context);
                           Navigator.pushNamedAndRemoveUntil(
                               context, '/', (route) => false);
+                          //don't forget to remove token from shared preferences
                           removeToken();
                         },
                         child: const Text('اه')),

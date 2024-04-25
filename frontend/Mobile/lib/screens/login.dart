@@ -87,7 +87,6 @@ class _LoginPageState extends State<LoginPage> {
           }
       }
     } catch (e) {
-      print(e);
       if (mounted) {
         showDialog(
             context: context,

@@ -1,9 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Post extends StatefulWidget {
   const Post({super.key, required this.body, this.attachments});
 
-  final String body;
+  final dynamic body;
   final List<String>? attachments;
 
   @override
@@ -11,6 +16,22 @@ class Post extends StatefulWidget {
 }
 
 class _PostState extends State<Post> {
+  String? userToken;
+  dynamic userData;
+
+  @override
+  void initState() {
+    super.initState();
+    getUserData();
+  }
+
+  Future<void> getUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    userToken = prefs.getString('token');
+    userData = jsonDecode(prefs.getString('userData')!);
+    print(widget.body['creator']['_id']);
+  }
+
   @override
   Widget build(BuildContext context) {
     // const TextStyle txtStyle = TextStyle(fontSize: 10);
@@ -29,22 +50,23 @@ class _PostState extends State<Post> {
                       const SizedBox(
                         width: 10,
                       ),
-                      CircleAvatar(
-                        backgroundImage: widget.attachments != null &&
-                                widget.attachments!.isNotEmpty
-                            ? AssetImage(widget.attachments![0])
-                            : const AssetImage('assets/images/church_logo.png'),
+                      const CircleAvatar(
+                        // backgroundImage: widget.attachments != null &&
+                        //         widget.attachments!.isNotEmpty
+                        //     ? AssetImage(widget.attachments![0])
+                        //     : const AssetImage('assets/images/church_logo.png'),
+                        backgroundImage: AssetImage('assets/images/church_logo.png'),
                       ),
                       const SizedBox(width: 10),
-                      const Column(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                            'user.name',
-                            textScaler: TextScaler.linear(1.2),
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            widget.body['creator']['username'],
+                            textScaler: const TextScaler.linear(1.2),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          Text('12:00pm')
+                          Text(DateFormat('dd/MM/yyyy hh:mm a').format(DateTime.parse(widget.body['createdAt'])))
                         ],
                       )
                     ],
@@ -52,7 +74,8 @@ class _PostState extends State<Post> {
                 ],
               ),
               // visible only to post creator
-              const IconButton(onPressed: null, icon: Icon(Icons.delete))
+              // (userData["_id"] == widget.body["creator"])?
+              IconButton(onPressed: ()=>0, icon: const Icon(Icons.delete))
             ],
           ),
           Align(
@@ -60,9 +83,9 @@ class _PostState extends State<Post> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(10, 10, 10, 40),
               child: Text(
-                widget.body,
+                widget.body["body"],
                 style: const TextStyle(fontSize: 20),
-                textDirection: TextDirection.rtl,
+                textDirection: ui.TextDirection.rtl,
               ),
             ),
           ),
@@ -95,11 +118,11 @@ class _PostState extends State<Post> {
           //       )),
           // ),
           Directionality(
-            textDirection: TextDirection.rtl,
+            textDirection: ui.TextDirection.rtl,
             child: Padding(
                 padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                 child: Row(
-                  textDirection: TextDirection.rtl,
+                  textDirection: ui.TextDirection.rtl,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     IconButton(

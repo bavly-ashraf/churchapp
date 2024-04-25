@@ -4,7 +4,8 @@ const { createPost, getAllPosts, getPostByID, deletePost, editPost } = require('
 const { uploadAttachments } = require('../Utils/fileUpload');
 const router = express.Router();
 
-router.post('/', verifyAdmin, uploadAttachments, createPost);
+// router.post('/', verifyAdmin, uploadAttachments, createPost);
+router.post('/', verifyAdmin, createPost);
 
 router.put('/:id', verifyAdmin, editPost);
 
