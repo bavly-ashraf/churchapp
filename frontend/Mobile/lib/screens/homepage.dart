@@ -20,7 +20,11 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
 
   //new announcement variables
   final _newAnnounceFormKey = GlobalKey<FormState>();
+  final _newHallFormKey = GlobalKey<FormState>();
+  final GlobalKey<AnnouncementsState> _announcementKey = GlobalKey<AnnouncementsState>();
+  final GlobalKey<HallsState> _hallKey = GlobalKey<HallsState>();
   String? _newAnnounce;
+  String? _newHall;
 
   //sharedPref variables
   dynamic userData;
@@ -62,6 +66,61 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
             body: jsonEncode(<String, String>{'body': _newAnnounce!}));
         if (response.statusCode == 201 && mounted) {
           Navigator.pop(context);
+          _announcementKey.currentState?.getAllAnnouncements();
+        } else {
+          if (mounted) {
+            showDialog(
+                context: context,
+                builder: (context) => Directionality(
+                      textDirection: TextDirection.rtl,
+                      child: AlertDialog(
+                        title: const Text('حصل مشكلة'),
+                        content: const Text('حصل مشكلة في السيرفر'),
+                        actions: <Widget>[
+                          TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('تمام'))
+                        ],
+                      ),
+                    ));
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          showDialog(
+              context: context,
+              builder: (context) => Directionality(
+                    textDirection: TextDirection.rtl,
+                    child: AlertDialog(
+                      title: const Text('حصل مشكلة'),
+                      content: const Text('حصل مشكلة في السيرفر'),
+                      actions: <Widget>[
+                        TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('تمام'))
+                      ],
+                    ),
+                  ));
+        }
+      }
+    }
+  }
+
+  Future<void> _uploadHall() async {
+    final form = _newHallFormKey.currentState;
+    if (form != null && form.validate() && userToken != null) {
+      form.save();
+      try {
+        final response = await http.post(
+            Uri.parse('http://localhost:3000/hall'),
+            headers: <String, String>{
+              'Content-Type': 'application/json; charset=UTF-8',
+              'Authorization': userToken!
+            },
+            body: jsonEncode(<String, String>{'name': _newHall!}));
+        if (response.statusCode == 201 && mounted) {
+          Navigator.pop(context);
+          _hallKey.currentState?.getAllHalls();
         } else {
           if (mounted) {
             showDialog(
@@ -118,10 +177,10 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
         return showModalBottomSheet(
             context: context,
             builder: (BuildContext context) {
-              return const SizedBox(
+              return SizedBox(
                 height: 200,
                 child: Center(
-                  child: Column(children: <Widget>[Text('new hall')]),
+                  child: createNewHall(),
                 ),
               );
             });
@@ -167,6 +226,53 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
                           ElevatedButton(
                               onPressed: _uploadPost,
                               child: const Text('نشر التنبيه'))
+                        ],
+                      ),
+                    ))),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget createNewHall() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          children: <Widget>[
+            Text(
+              'قاعة جديد',
+              style: TextStyle(
+                  fontSize: 25, color: Theme.of(context).primaryColor),
+            ),
+            Padding(
+                padding: const EdgeInsets.all(10),
+                child: Directionality(
+                    textDirection: TextDirection.rtl,
+                    child: Form(
+                      key: _newHallFormKey,
+                      child: Column(
+                        children: <Widget>[
+                          TextFormField(
+                            validator: (value) {
+                              if (value != '') {
+                                return null;
+                              }
+                              return 'من فضلك اكتب اسم القاعة';
+                            },
+                            onSaved: (newHall) =>
+                                _newHall = newHall,
+                            decoration: const InputDecoration(
+                              hintText: 'اكتب اسم القاعة',
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          ElevatedButton(
+                              onPressed: _uploadHall,
+                              child: const Text('اضافة القاعة'))
                         ],
                       ),
                     ))),
@@ -280,7 +386,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
             ),
             body: TabBarView(
               controller: controller,
-              children: <Widget>[const Announcements(), Halls()],
+              children: <Widget>[Announcements(key: _announcementKey,), Halls(key: _hallKey,)],
             )));
   }
 }

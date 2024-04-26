@@ -9,10 +9,10 @@ class Announcements extends StatefulWidget {
   const Announcements({super.key});
 
   @override
-  State<Announcements> createState() => _Announcements();
+  State<Announcements> createState() => AnnouncementsState();
 }
 
-class _Announcements extends State<Announcements> {
+class AnnouncementsState extends State<Announcements> {
   String? userToken;
   dynamic userData;
   List<dynamic> body = [];
@@ -91,6 +91,7 @@ class _Announcements extends State<Announcements> {
             padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
             child: Post(
               body: body[index],
+              getAllAnnouncements: getAllAnnouncements,
               // attachments: attachments,
             )),
       ),

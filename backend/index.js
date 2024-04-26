@@ -10,6 +10,7 @@ require('./database');
 const authRoute = require('./Routes/authRoute');
 const postRoute = require('./Routes/postRoute');
 const reactRoute = require('./Routes/reactRoute');
+const hallRoute = require('./Routes/hallRoute');
 
 
 app.use(express.urlencoded({extended: true}));
@@ -21,6 +22,7 @@ app.use(morgan('dev'));
 app.use('/user', authRoute);
 app.use('/post', postRoute);
 app.use('/react', reactRoute);
+app.use('/hall', hallRoute);
 
 
 // global error handler

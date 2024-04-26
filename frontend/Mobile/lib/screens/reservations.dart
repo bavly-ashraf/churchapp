@@ -1,3 +1,4 @@
+import 'package:church/screens/reservations_status.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../utils.dart';
@@ -103,9 +104,9 @@ class _Reservations extends State<Reservations> {
         title: Text(widget.hallName),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
-        actions: const <Widget>[
-                IconButton(onPressed: null, icon:  Icon(Icons.pending_actions), tooltip: 'متابعة الحجوزات',),
-                 SizedBox(width: 10),
+        actions: <Widget>[
+                IconButton(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ReservationsStatus(hallName: widget.hallName,))), icon:  const Icon(Icons.pending_actions), tooltip: 'متابعة الحجوزات',),
+                const SizedBox(width: 10),
               ],
       ),
       body: Container(

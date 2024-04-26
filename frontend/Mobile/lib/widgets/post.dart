@@ -1,14 +1,19 @@
 import 'dart:convert';
-
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Post extends StatefulWidget {
-  const Post({super.key, required this.body, this.attachments});
+  const Post(
+      {super.key,
+      required this.body,
+      this.attachments,
+      required this.getAllAnnouncements});
 
   final dynamic body;
+  final Function getAllAnnouncements;
   final List<String>? attachments;
 
   @override
@@ -18,6 +23,10 @@ class Post extends StatefulWidget {
 class _PostState extends State<Post> {
   String? userToken;
   dynamic userData;
+  String? userId;
+  String? postUserId;
+  String? react;
+  dynamic allReacts;
 
   @override
   void initState() {
@@ -29,7 +38,144 @@ class _PostState extends State<Post> {
     final prefs = await SharedPreferences.getInstance();
     userToken = prefs.getString('token');
     userData = jsonDecode(prefs.getString('userData')!);
-    print(widget.body['creator']['_id']);
+    setState(() {
+      userId = userData['_id'];
+      postUserId = widget.body['creator']['_id'];
+      if (widget.body['postReacts'] != null &&
+          widget.body['postReacts'].length > 0) {
+            allReacts = widget.body['postReacts'];
+        var userReact = widget.body['postReacts'].firstWhere(
+            (el) => el['creator'] == userData['_id'],
+            orElse: () => null);
+        if (userReact != null) {
+          react = userReact['react'];
+        }
+      }
+    });
+  }
+
+  Future<void> _deletePostDialog() async {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return Directionality(
+            textDirection: ui.TextDirection.rtl,
+            child: AlertDialog(
+              title: const Text('متأكد؟'),
+              content: const Text('متأكد انك عايز تمسح التنبيه دة؟'),
+              actions: <Widget>[
+                TextButton(onPressed: _deletePost, child: const Text('اه')),
+                TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('لا')),
+              ],
+            ),
+          );
+        });
+  }
+
+  Future<void> _deletePost() async {
+    try {
+      final response = await http.delete(
+          Uri.parse('http://localhost:3000/post/${widget.body['_id']}'),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+            'Authorization': userToken!
+          });
+      if (response.statusCode == 200) {
+        if (mounted) {
+          Navigator.pop(context);
+          widget.getAllAnnouncements();
+        }
+      } else {
+        if (mounted) {
+          showDialog(
+              context: context,
+              builder: (context) => Directionality(
+                    textDirection: ui.TextDirection.rtl,
+                    child: AlertDialog(
+                      title: const Text('حصل مشكلة'),
+                      content: const Text('حصل مشكلة في السيرفر'),
+                      actions: <Widget>[
+                        TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('تمام'))
+                      ],
+                    ),
+                  ));
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+            context: context,
+            builder: (context) => Directionality(
+                  textDirection: ui.TextDirection.rtl,
+                  child: AlertDialog(
+                    title: const Text('حصل مشكلة'),
+                    content: const Text('حصل مشكلة في السيرفر'),
+                    actions: <Widget>[
+                      TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('تمام'))
+                    ],
+                  ),
+                ));
+      }
+    }
+  }
+
+  Future<void> _postReact() async {
+    try {
+      final response = await http.post(
+          Uri.parse('http://localhost:3000/react/${widget.body['_id']}'),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+            'Authorization': userToken!
+          },
+          body: jsonEncode(<String, String>{'react': react!}));
+      if (response.statusCode == 201) {
+
+      } else if (response.statusCode == 200) {
+        setState(() {
+          react = null;
+        });
+      } else {
+        if (mounted) {
+          showDialog(
+              context: context,
+              builder: (context) => Directionality(
+                    textDirection: ui.TextDirection.rtl,
+                    child: AlertDialog(
+                      title: const Text('حصل مشكلة'),
+                      content: const Text('حصل مشكلة في السيرفر'),
+                      actions: <Widget>[
+                        TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('تمام'))
+                      ],
+                    ),
+                  ));
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+            context: context,
+            builder: (context) => Directionality(
+                  textDirection: ui.TextDirection.rtl,
+                  child: AlertDialog(
+                    title: const Text('حصل مشكلة'),
+                    content: const Text('حصل مشكلة في السيرفر'),
+                    actions: <Widget>[
+                      TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('تمام'))
+                    ],
+                  ),
+                ));
+      }
+    }
   }
 
   @override
@@ -55,7 +201,8 @@ class _PostState extends State<Post> {
                         //         widget.attachments!.isNotEmpty
                         //     ? AssetImage(widget.attachments![0])
                         //     : const AssetImage('assets/images/church_logo.png'),
-                        backgroundImage: AssetImage('assets/images/church_logo.png'),
+                        backgroundImage:
+                            AssetImage('assets/images/church_logo.png'),
                       ),
                       const SizedBox(width: 10),
                       Column(
@@ -66,7 +213,8 @@ class _PostState extends State<Post> {
                             textScaler: const TextScaler.linear(1.2),
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          Text(DateFormat('dd/MM/yyyy hh:mm a').format(DateTime.parse(widget.body['createdAt'])))
+                          Text(DateFormat('dd/MM/yyyy hh:mm a')
+                              .format(DateTime.parse(widget.body['createdAt'])))
                         ],
                       )
                     ],
@@ -75,7 +223,10 @@ class _PostState extends State<Post> {
               ),
               // visible only to post creator
               // (userData["_id"] == widget.body["creator"])?
-              IconButton(onPressed: ()=>0, icon: const Icon(Icons.delete))
+              if (userId == postUserId)
+                IconButton(
+                    onPressed: _deletePostDialog,
+                    icon: const Icon(Icons.delete_outline))
             ],
           ),
           Align(
@@ -121,65 +272,105 @@ class _PostState extends State<Post> {
             textDirection: ui.TextDirection.rtl,
             child: Padding(
                 padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                child: Row(
-                  textDirection: ui.TextDirection.rtl,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
                   children: <Widget>[
-                    IconButton(
-                        onPressed: () => 0,
-                        icon: const Icon(Icons.thumb_up_outlined),
-                        color: Theme.of(context).primaryColor,
-                        tooltip: 'عجبني'),
-                    const SizedBox(width: 10),
-                    IconButton(
-                        onPressed: () => 0,
-                        icon: const Icon(Icons.favorite_border_outlined),
-                        color: Theme.of(context).primaryColor,
-                        tooltip: 'عجبني اوي'),
-                    const SizedBox(width: 10),
-                    IconButton(
-                        onPressed: () => 0,
-                        icon: const Icon(Icons.thumb_down_outlined),
-                        color: Theme.of(context).primaryColor,
-                        tooltip: 'مش موافق'),
-                    const SizedBox(width: 10),
-                    IconButton(
-                        onPressed: () => 0,
-                        icon: const Icon(Icons.heart_broken_outlined),
-                        color: Theme.of(context).primaryColor,
-                        tooltip: 'حزين'),
-                    // ElevatedButton.icon(
-                    //     onPressed: () => 0,
-                    //     icon: const Icon(Icons.thumb_up_outlined),
-                    //     label: const Text(
-                    //       'عجبني',
-                    //       style: txtStyle,
-                    //     )),
-                    // const SizedBox(width: 10),
-                    // ElevatedButton.icon(
-                    //     onPressed: () => 0,
-                    //     icon: const Icon(Icons.favorite_border_outlined),
-                    //     label: const Text(
-                    //       'عجبني اوي',
-                    //       style: txtStyle,
-                    //     )),
-                    // const SizedBox(width: 10),
-                    // ElevatedButton.icon(
-                    //     onPressed: () => 0,
-                    //     icon: const Icon(Icons.thumb_down_outlined),
-                    //     label: const Text(
-                    //       'معجبنيش',
-                    //       style: txtStyle,
-                    //     )),
-                    // const SizedBox(width: 10),
-                    // ElevatedButton.icon(
-                    //     onPressed: () => 0,
-                    //     icon: const Icon(Icons.heart_broken_outlined),
-                    //     label: const Text(
-                    //       'حزين',
-                    //       style: txtStyle,
-                    //     )),
-                  ],
+                    allReacts != null?
+                    Row(
+                      textDirection: ui.TextDirection.rtl,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: <Widget>[
+                        TextButton(onPressed: ()=> 0, child: Text('${allReacts.length} ريأكت'))
+                      ],
+                    ): Container(),
+                    Row(
+                    textDirection: ui.TextDirection.rtl,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      IconButton(
+                          onPressed: () {
+                            setState(() {
+                              react = 'Like';
+                            });
+                            _postReact();
+                          },
+                          icon: react == 'Like'
+                              ? const Icon(Icons.thumb_up)
+                              : const Icon(Icons.thumb_up_outlined),
+                          color: Theme.of(context).primaryColor,
+                          tooltip: 'عجبني'),
+                      const SizedBox(width: 10),
+                      IconButton(
+                          onPressed: () {
+                            setState(() {
+                              react = 'Love';
+                            });
+                            _postReact();
+                          },
+                          icon: react == 'Love'
+                              ? const Icon(Icons.favorite_rounded)
+                              : const Icon(Icons.favorite_border_outlined),
+                          color: Theme.of(context).primaryColor,
+                          tooltip: 'عجبني اوي'),
+                      const SizedBox(width: 10),
+                      IconButton(
+                          onPressed: () {
+                            setState(() {
+                              react = 'Dislike';
+                            });
+                            _postReact();
+                          },
+                          icon: react == 'Dislike'
+                              ? const Icon(Icons.thumb_down)
+                              : const Icon(Icons.thumb_down_outlined),
+                          color: Theme.of(context).primaryColor,
+                          tooltip: 'مش موافق'),
+                      const SizedBox(width: 10),
+                      IconButton(
+                          onPressed: () {
+                            setState(() {
+                              react = 'Sad';
+                            });
+                            _postReact();
+                          },
+                          icon: react == 'Sad'
+                              ? const Icon(Icons.heart_broken)
+                              : const Icon(Icons.heart_broken_outlined),
+                          color: Theme.of(context).primaryColor,
+                          tooltip: 'حزين'),
+                      // ElevatedButton.icon(
+                      //     onPressed: () => 0,
+                      //     icon: const Icon(Icons.thumb_up_outlined),
+                      //     label: const Text(
+                      //       'عجبني',
+                      //       style: txtStyle,
+                      //     )),
+                      // const SizedBox(width: 10),
+                      // ElevatedButton.icon(
+                      //     onPressed: () => 0,
+                      //     icon: const Icon(Icons.favorite_border_outlined),
+                      //     label: const Text(
+                      //       'عجبني اوي',
+                      //       style: txtStyle,
+                      //     )),
+                      // const SizedBox(width: 10),
+                      // ElevatedButton.icon(
+                      //     onPressed: () => 0,
+                      //     icon: const Icon(Icons.thumb_down_outlined),
+                      //     label: const Text(
+                      //       'معجبنيش',
+                      //       style: txtStyle,
+                      //     )),
+                      // const SizedBox(width: 10),
+                      // ElevatedButton.icon(
+                      //     onPressed: () => 0,
+                      //     icon: const Icon(Icons.heart_broken_outlined),
+                      //     label: const Text(
+                      //       'حزين',
+                      //       style: txtStyle,
+                      //     )),
+                    ],
+                  ),
+                  ]
                 )),
           ),
           const Padding(padding: EdgeInsets.fromLTRB(0, 10, 0, 0))

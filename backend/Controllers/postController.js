@@ -27,7 +27,7 @@ const editPost = async (req,res,next) => {
 
 const getAllPosts = async (req,res,next) => {
     const {skip,limit} = req.query;
-    const allPosts = await Post.find().sort({createdAt:-1}).skip(skip).limit(limit).populate('creator');
+    const allPosts = await Post.find().sort({createdAt:-1}).skip(skip).limit(limit).populate('creator').populate('postReacts');
     res.status(200).json({message:'success',allPosts,count:allPosts.length});
 };
 

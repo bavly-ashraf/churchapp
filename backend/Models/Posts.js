@@ -17,6 +17,15 @@ const postSchema = new Schema({
         type: Date,
         default: Date.now,
     }
+},{
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
+
+postSchema.virtual('postReacts',{
+    ref: 'React',
+    localField: '_id',
+    foreignField: 'post'
 });
 
 const Post = mongoose.model('Post',postSchema);
