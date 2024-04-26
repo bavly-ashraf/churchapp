@@ -45,7 +45,7 @@ class _PostState extends State<Post> {
           widget.body['postReacts'].length > 0) {
             allReacts = widget.body['postReacts'];
         var userReact = widget.body['postReacts'].firstWhere(
-            (el) => el['creator'] == userData['_id'],
+            (el) => el['creator']['_id'] == userData['_id'],
             orElse: () => null);
         if (userReact != null) {
           react = userReact['react'];
@@ -178,9 +178,61 @@ class _PostState extends State<Post> {
     }
   }
 
+  Widget reactIcon(String react, Color color, double size) {
+      switch(react){
+        case 'Like':
+          return Icon(Icons.thumb_up, color: color, size: size,);
+        case 'Love':
+          return Icon(Icons.favorite, color: color, size: size,);
+        case 'Dislike':
+          return Icon(Icons.thumb_down, color: color, size: size,);
+        case 'Sad':
+          return Icon(Icons.heart_broken, color: color, size: size,);
+        default: return Container();
+      }
+   }
+
+  String reactText(String react) {
+      switch(react){
+        case 'Like':
+          return 'عجبني';
+        case 'Love':
+          return 'عجبني اوي';
+        case 'Dislike':
+          return 'مش موافق';
+        case 'Sad':
+          return 'حزين';
+        default: throw Exception('Please provide react');
+      }
+   }
+
+  Future<void> _showReacts() {
+    return showDialog(context: context, builder: (context){
+      return Directionality(
+        textDirection: ui.TextDirection.rtl,
+        child: LayoutBuilder(
+          builder: (context, constraints) => AlertDialog(
+            title: const Text('الريأكتات',textAlign: TextAlign.center),
+            content: SizedBox(
+              width: constraints.maxWidth * 0.8,
+              height: constraints.maxHeight * 0.8,
+              child: ListView.separated(
+                itemBuilder: (context,index)=> ListTile(leading: reactIcon(allReacts[index]['react'], Theme.of(context).primaryColor, 30), title: Text(allReacts[index]['creator']['username'],style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),), subtitle: Text(reactText(allReacts[index]['react'])),),
+                itemCount: allReacts.length,
+                separatorBuilder: (context, index) => const Divider(),
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text('تمام'))
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    // const TextStyle txtStyle = TextStyle(fontSize: 10);
 
     return (Card(
       child: Column(
@@ -214,7 +266,7 @@ class _PostState extends State<Post> {
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           Text(DateFormat('dd/MM/yyyy hh:mm a')
-                              .format(DateTime.parse(widget.body['createdAt'])))
+                              .format(DateTime.parse(widget.body['createdAt']).toLocal()))
                         ],
                       )
                     ],
@@ -258,16 +310,6 @@ class _PostState extends State<Post> {
             indent: 10,
             endIndent: 10,
           ),
-          // GestureDetector(
-          //   onTap: () => print('working!!!'),
-          //   child: const Padding(
-          //       padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-          //       child: Row(
-          //         textDirection: TextDirection.rtl,
-          //         mainAxisAlignment: MainAxisAlignment.start,
-          //         children: <Widget>[Text('5'),Text('تفاعل ')],
-          //       )),
-          // ),
           Directionality(
             textDirection: ui.TextDirection.rtl,
             child: Padding(
@@ -279,7 +321,7 @@ class _PostState extends State<Post> {
                       textDirection: ui.TextDirection.rtl,
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
-                        TextButton(onPressed: ()=> 0, child: Text('${allReacts.length} ريأكت'))
+                        TextButton(onPressed: _showReacts, child: Text('${allReacts.length} ريأكت'))
                       ],
                     ): Container(),
                     Row(
@@ -337,37 +379,6 @@ class _PostState extends State<Post> {
                               : const Icon(Icons.heart_broken_outlined),
                           color: Theme.of(context).primaryColor,
                           tooltip: 'حزين'),
-                      // ElevatedButton.icon(
-                      //     onPressed: () => 0,
-                      //     icon: const Icon(Icons.thumb_up_outlined),
-                      //     label: const Text(
-                      //       'عجبني',
-                      //       style: txtStyle,
-                      //     )),
-                      // const SizedBox(width: 10),
-                      // ElevatedButton.icon(
-                      //     onPressed: () => 0,
-                      //     icon: const Icon(Icons.favorite_border_outlined),
-                      //     label: const Text(
-                      //       'عجبني اوي',
-                      //       style: txtStyle,
-                      //     )),
-                      // const SizedBox(width: 10),
-                      // ElevatedButton.icon(
-                      //     onPressed: () => 0,
-                      //     icon: const Icon(Icons.thumb_down_outlined),
-                      //     label: const Text(
-                      //       'معجبنيش',
-                      //       style: txtStyle,
-                      //     )),
-                      // const SizedBox(width: 10),
-                      // ElevatedButton.icon(
-                      //     onPressed: () => 0,
-                      //     icon: const Icon(Icons.heart_broken_outlined),
-                      //     label: const Text(
-                      //       'حزين',
-                      //       style: txtStyle,
-                      //     )),
                     ],
                   ),
                   ]

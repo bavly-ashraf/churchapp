@@ -85,15 +85,18 @@ class AnnouncementsState extends State<Announcements> {
   @override
   Widget build(BuildContext context) {
     return (Scaffold(
-      body: ListView.builder(
-        itemCount: body.length,
-        itemBuilder: (context, index) => Padding(
-            padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-            child: Post(
-              body: body[index],
-              getAllAnnouncements: getAllAnnouncements,
-              // attachments: attachments,
-            )),
+      body: RefreshIndicator(
+        onRefresh: getAllAnnouncements,
+        child: ListView.builder(
+          itemCount: body.length,
+          itemBuilder: (context, index) => Padding(
+              padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+              child: Post(
+                body: body[index],
+                getAllAnnouncements: getAllAnnouncements,
+                // attachments: attachments,
+              )),
+        ),
       ),
     ));
   }

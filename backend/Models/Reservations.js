@@ -1,3 +1,4 @@
+const { required } = require('joi');
 const { Schema, default: mongoose } = require('mongoose');
 
 const ReservationSchema = new Schema({
@@ -6,9 +7,27 @@ const ReservationSchema = new Schema({
         ref: 'Hall',
         required: true,
     },
-    unavailableAt: {
+    startTime: {
         type: Date,
         required: true,
+    },
+    endTime: {
+        type: Date,
+        required: true,
+    },
+    status: {
+        type: String,
+        enum: ['Pending','Approved','Rejected'],
+        default: 'Pending',
+    },
+    reason: {
+        type: String,
+        required: true,
+    },
+    reserver: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     }
 });
 
