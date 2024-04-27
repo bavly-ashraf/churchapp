@@ -25,8 +25,8 @@ const getAllReactsForPost = async (req,res,next)=> {
     const userID = req.user.id;
     const reacts = await React.find({post:id}).populate('creator');
     let isReacted = null;
-    if(reacts.length > 0){
-        isReacted = reacts?.find(el => el.creator.id == userID).react || null;
+    if(reacts && reacts.length > 0){
+        isReacted = reacts.find(el => el.creator.id == userID)?.react;
     }
     res.status(200).json({message: 'success', reacts, isReacted})
 }
