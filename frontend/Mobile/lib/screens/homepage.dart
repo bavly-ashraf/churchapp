@@ -21,7 +21,8 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
   //new announcement variables
   final _newAnnounceFormKey = GlobalKey<FormState>();
   final _newHallFormKey = GlobalKey<FormState>();
-  final GlobalKey<AnnouncementsState> _announcementKey = GlobalKey<AnnouncementsState>();
+  final GlobalKey<AnnouncementsState> _announcementKey =
+      GlobalKey<AnnouncementsState>();
   final GlobalKey<HallsState> _hallKey = GlobalKey<HallsState>();
   String? _newAnnounce;
   String? _newHall;
@@ -166,10 +167,14 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
         return showModalBottomSheet(
             context: context,
             builder: (BuildContext context) {
-              return SizedBox(
-                height: 200,
-                child: Center(
-                  child: createNewAnnouncement(),
+              return Padding(
+                padding: const EdgeInsets.all(20.0)
+                    .copyWith(bottom: MediaQuery.of(context).viewInsets.bottom),
+                child: SizedBox(
+                  height: 200,
+                  child: Center(
+                    child: createNewAnnouncement(),
+                  ),
                 ),
               );
             });
@@ -177,10 +182,14 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
         return showModalBottomSheet(
             context: context,
             builder: (BuildContext context) {
-              return SizedBox(
-                height: 200,
-                child: Center(
-                  child: createNewHall(),
+              return Padding(
+                padding: const EdgeInsets.all(20.0)
+                    .copyWith(bottom: MediaQuery.of(context).viewInsets.bottom),
+                child: SizedBox(
+                  height: 200,
+                  child: Center(
+                    child: createNewHall(),
+                  ),
                 ),
               );
             });
@@ -261,8 +270,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
                               }
                               return 'من فضلك اكتب اسم القاعة';
                             },
-                            onSaved: (newHall) =>
-                                _newHall = newHall,
+                            onSaved: (newHall) => _newHall = newHall,
                             decoration: const InputDecoration(
                               hintText: 'اكتب اسم القاعة',
                             ),
@@ -386,7 +394,14 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
             ),
             body: TabBarView(
               controller: controller,
-              children: <Widget>[Announcements(key: _announcementKey,), Halls(key: _hallKey,)],
+              children: <Widget>[
+                Announcements(
+                  key: _announcementKey,
+                ),
+                Halls(
+                  key: _hallKey,
+                )
+              ],
             )));
   }
 }

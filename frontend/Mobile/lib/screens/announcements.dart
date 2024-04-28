@@ -37,7 +37,6 @@ class AnnouncementsState extends State<Announcements> {
   }
 
   Future<void> getAllAnnouncements([bool reloadFirstPage = false]) async {
-    print('reloading posts...');
     try {
       if (mounted) {
         setState(() {
