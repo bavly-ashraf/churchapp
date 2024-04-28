@@ -15,7 +15,12 @@ class Announcements extends StatefulWidget {
 class AnnouncementsState extends State<Announcements> {
   String? userToken;
   dynamic userData;
-  List<dynamic> body = [];
+  int numOfPostsPerPage = 10;
+  bool isLastPage = false;
+  int pageNum = 0;
+  bool loading = false;
+  int nextPageTrigger = 3;
+  List<dynamic> posts = [];
   // final List<String> attachments = ['assets/images/church_logo.png'];
 
   @override
@@ -31,21 +36,44 @@ class AnnouncementsState extends State<Announcements> {
     getAllAnnouncements();
   }
 
-  Future<void> getAllAnnouncements() async {
+  Future<void> getAllAnnouncements([bool reloadFirstPage = false]) async {
+    print('reloading posts...');
     try {
+      if (mounted) {
+        setState(() {
+          loading = true;
+          if (reloadFirstPage == true) {
+            pageNum = 0;
+          }
+        });
+      }
       final response = await http.get(
-        Uri.parse('http://localhost:3000/post?skip=0&limit=10'),
+        Uri.parse(
+            'https://churchapp-tstf.onrender.com/post?skip=$pageNum&limit=$numOfPostsPerPage'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': userToken!
         },
       );
-      if(response.statusCode == 200){
-        setState(() {
-          body = jsonDecode(response.body)['allPosts'];
-        });
-      }else{
+      if (response.statusCode == 200) {
+        List responseList = jsonDecode(response.body)['allPosts'];
         if (mounted) {
+          setState(() {
+            isLastPage = responseList.length < numOfPostsPerPage;
+            pageNum = pageNum + 1;
+            loading = false;
+            if (reloadFirstPage == true) {
+              posts = responseList;
+            } else {
+              posts.addAll(responseList);
+            }
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            loading = false;
+          });
           showDialog(
               context: context,
               builder: (context) => Directionality(
@@ -64,6 +92,9 @@ class AnnouncementsState extends State<Announcements> {
       }
     } catch (e) {
       if (mounted) {
+        setState(() {
+          loading = false;
+        });
         showDialog(
             context: context,
             builder: (context) => Directionality(
@@ -87,16 +118,34 @@ class AnnouncementsState extends State<Announcements> {
     return (Scaffold(
       body: RefreshIndicator(
         onRefresh: getAllAnnouncements,
-        child: ListView.builder(
-          itemCount: body.length,
-          itemBuilder: (context, index) => Padding(
-              padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-              child: Post(
-                body: body[index],
-                getAllAnnouncements: getAllAnnouncements,
-                // attachments: attachments,
-              )),
-        ),
+        child: loading == true
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : ListView.builder(
+                itemCount: posts.length + (isLastPage ? 0 : 1),
+                itemBuilder: (context, index) {
+                  if (posts.length >= 10 &&
+                      (index == posts.length - nextPageTrigger)) {
+                    getAllAnnouncements();
+                  }
+                  if (index == posts.length) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(8),
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
+                  return Padding(
+                      padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                      child: Post(
+                        body: posts[index],
+                        index: index,
+                        getAllAnnouncements: getAllAnnouncements,
+                        // attachments: attachments,
+                      ));
+                }),
       ),
     ));
   }

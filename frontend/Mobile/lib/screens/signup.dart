@@ -13,7 +13,7 @@ class SignupPage extends StatefulWidget {
 
 class _SignupPageState extends State<SignupPage> {
   final _formKey = GlobalKey<FormState>();
-  final url = Uri.parse('http://localhost:3000/user/signup');
+  final url = Uri.parse('https://churchapp-tstf.onrender.com/user/signup');
 
   String? _userName;
   String? _email;
@@ -175,9 +175,9 @@ class _SignupPageState extends State<SignupPage> {
                           TextFormField(
                             validator: (value) {
                               if (value != null && value.isNotEmpty) {
-                                if (!value.contains('.')) {
-                                  return 'اكتب اسم المستخدم صح';
-                                }
+                                // if (!value.contains('.')) {
+                                //   return 'اكتب اسم المستخدم صح';
+                                // }
                                 return null;
                               }
                               return 'اكتب اسم المستخدم';

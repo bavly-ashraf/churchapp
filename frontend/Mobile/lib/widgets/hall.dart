@@ -23,7 +23,7 @@ class Hall extends StatelessWidget {
     Future<void> deleteHall() async {
           // try {
       final response = await http.delete(
-        Uri.parse('http://localhost:3000/hall/$hallID'),
+        Uri.parse('https://churchapp-tstf.onrender.com/hall/$hallID'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': userToken
@@ -97,17 +97,22 @@ class Hall extends StatelessWidget {
       onTap: openHallReservation,
       onLongPress: deleteHallDialog,
       child: (Card(
-        child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Icon(Icons.church_rounded,
-                  size: 50, color: Theme.of(context).primaryColor),
-              const SizedBox(height: 10),
-              Text(hallName,
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold))
-            ]),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+          child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Icon(Icons.church_rounded,
+                    size: 50, color: Theme.of(context).primaryColor),
+                const SizedBox(height: 10),
+                Text(hallName,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold))
+              ]),
+        ),
       )),
     );
   }

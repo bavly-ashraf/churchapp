@@ -46,7 +46,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
     userToken = prefs.getString('token');
     userData = jsonDecode(prefs.getString('userData')!);
     setState(() {
-      userName = '${userData['username']} ازيك يا';
+      userName = userData['username'];
       role = userData['role'];
       showFab = (role == 'user') ? false : true;
     });
@@ -58,7 +58,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
       form.save();
       try {
         final response = await http.post(
-            Uri.parse('http://localhost:3000/post'),
+            Uri.parse('https://churchapp-tstf.onrender.com/post'),
             headers: <String, String>{
               'Content-Type': 'application/json; charset=UTF-8',
               'Authorization': userToken!
@@ -66,7 +66,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
             body: jsonEncode(<String, String>{'body': _newAnnounce!}));
         if (response.statusCode == 201 && mounted) {
           Navigator.pop(context);
-          _announcementKey.currentState?.getAllAnnouncements();
+          _announcementKey.currentState?.getAllAnnouncements(true);
         } else {
           if (mounted) {
             showDialog(
@@ -112,7 +112,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
       form.save();
       try {
         final response = await http.post(
-            Uri.parse('http://localhost:3000/hall'),
+            Uri.parse('https://churchapp-tstf.onrender.com/hall'),
             headers: <String, String>{
               'Content-Type': 'application/json; charset=UTF-8',
               'Authorization': userToken!

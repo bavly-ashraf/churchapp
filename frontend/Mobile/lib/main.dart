@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
   runApp(MyApp(token: token,));
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
         )
       ),
       // check if there's token in shared preferences and if true open homepage else open login page
-      home: (token == null || token!.isEmpty)? const LoginPage() : const Homepage(),
+      home: token == null ? const LoginPage() : const Homepage(),
     );
   }
 }

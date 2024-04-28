@@ -15,6 +15,7 @@ class HallsState extends State<Halls>{
     String? userToken;
     dynamic userData;
     dynamic hallNames = [];
+    bool loading = false;
 
   @override
   void initState() {
@@ -31,17 +32,25 @@ class HallsState extends State<Halls>{
 
 Future<void> getAllHalls() async {
     try {
+      if(mounted){
+      setState(() {
+        loading = true;
+      });
+      }
       final response = await http.get(
-        Uri.parse('http://localhost:3000/hall'),
+        Uri.parse('https://churchapp-tstf.onrender.com/hall'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': userToken!
         },
       );
       if(response.statusCode == 200){
+        if(mounted){
         setState(() {
           hallNames = jsonDecode(response.body)['halls'];
+          loading = false;
         });
+        }
       }else{
         if (mounted) {
           showDialog(
@@ -86,6 +95,10 @@ Future<void> getAllHalls() async {
         body: Directionality(
           textDirection: TextDirection.rtl,
           child: (
+            loading == true?
+            const Center(
+              child: CircularProgressIndicator(),
+            ) :
             GridView.builder(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
             itemCount: hallNames.length,
