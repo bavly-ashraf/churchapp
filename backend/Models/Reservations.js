@@ -31,6 +31,11 @@ const ReservationSchema = new Schema({
     }
 });
 
+ReservationSchema.pre('findOneAndUpdate',function(next){
+    this.options.runValidators = true;
+    next();
+})
+
 const Reservation = mongoose.model('Reservation', ReservationSchema);
 
 module.exports = Reservation;
