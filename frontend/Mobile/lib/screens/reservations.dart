@@ -21,6 +21,16 @@ class _Reservations extends State<Reservations> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _rangeStart;
   DateTime? _rangeEnd;
+  final _newReservationFormKey = GlobalKey<FormState>();
+  String? _newReservationReason;
+  final TextEditingController _selectedDateController = TextEditingController();
+  final TextEditingController _selectedStartTimeController =
+      TextEditingController();
+  final TextEditingController _selectedEndTimeController =
+      TextEditingController();
+  DateTime? _selectedDate;
+  TimeOfDay? _selectedStartTime;
+  TimeOfDay? _selectedEndTime;
 
   @override
   void initState() {
@@ -83,17 +93,205 @@ class _Reservations extends State<Reservations> {
     }
   }
 
+  Future<void> _reserve() async {
+    final form = _newReservationFormKey.currentState;
+    if (form != null && form.validate()) {
+      DateTime today = DateTime.now();
+      DateTime todayDateOnly = DateTime(today.year, today.month, today.day, 0, 0, 0);
+      if (_selectedDate!
+          .isBefore(todayDateOnly)) {
+        print('wrong date');
+      }
+      form.save();
+    }
+  }
+
   Future<void> showNewReservationModal() {
     return showModalBottomSheet(
         context: context,
         builder: (BuildContext context) {
-          return const SizedBox(
-            height: 600,
-            child: Center(
-              child: Column(children: <Widget>[Text('test')]),
+          return Padding(
+            padding: const EdgeInsets.all(20.0)
+                .copyWith(bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: SizedBox(
+              height: 600,
+              child: Center(
+                child: createNewReservation(),
+              ),
             ),
           );
         });
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null &&
+        '${picked.day}/${picked.month}/${picked.year}' !=
+            _selectedDateController.text &&
+        picked != _selectedDate) {
+      setState(() {
+        _selectedDateController.text =
+            '${picked.day}/${picked.month}/${picked.year}';
+        _selectedDate = picked;
+        print('${picked.day}/${picked.month}/${picked.year}');
+      });
+    }
+  }
+
+  Future<void> _selectTime(BuildContext context, String time) async {
+    final TimeOfDay? picked =
+        await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    switch (time) {
+      case 'start':
+        {
+          if (picked != null &&
+              picked.format(context) != _selectedStartTimeController.text &&
+              picked != _selectedStartTime) {
+            setState(() {
+              _selectedStartTimeController.text = picked.format(context);
+              _selectedStartTime = picked;
+              print(picked.format(context));
+            });
+          }
+        }
+        break;
+      case 'end':
+        {
+          if (picked != null &&
+              picked.format(context) != _selectedEndTimeController.text &&
+              picked != _selectedEndTime) {
+            setState(() {
+              _selectedEndTimeController.text = picked.format(context);
+              _selectedEndTime = picked;
+              print(picked.format(context));
+            });
+          }
+        }
+    }
+  }
+
+  Widget createNewReservation() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          children: <Widget>[
+            Text(
+              'حجز جديد',
+              style: TextStyle(
+                  fontSize: 25, color: Theme.of(context).primaryColor),
+            ),
+            Padding(
+                padding: const EdgeInsets.all(10),
+                child: Directionality(
+                    textDirection: TextDirection.rtl,
+                    child: Form(
+                      key: _newReservationFormKey,
+                      child: Column(
+                        children: <Widget>[
+                          TextFormField(
+                            validator: (value) {
+                              if (value != '') {
+                                return null;
+                              }
+                              return 'من فضلك اكتب سبب الحجز';
+                            },
+                            onSaved: (newReservationReason) =>
+                                _newReservationReason = newReservationReason,
+                            decoration: const InputDecoration(
+                              hintText: 'اكتب سبب الحجز',
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              _selectDate(context);
+                            },
+                            child: AbsorbPointer(
+                              child: TextFormField(
+                                  textDirection: TextDirection.ltr,
+                                  textAlign: TextAlign.end,
+                                  decoration: const InputDecoration(
+                                    labelText: 'اختار اليوم',
+                                    suffixIcon: Icon(Icons.calendar_today),
+                                  ),
+                                  validator: (value) {
+                                    if (value != '') {
+                                      return null;
+                                    }
+                                    return 'من فضلك اختار اليوم';
+                                  },
+                                  controller: _selectedDateController),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              _selectTime(context, 'start');
+                            },
+                            child: AbsorbPointer(
+                              child: TextFormField(
+                                  textDirection: TextDirection.ltr,
+                                  textAlign: TextAlign.end,
+                                  decoration: const InputDecoration(
+                                    labelText: 'اختار وقت البداية',
+                                    suffixIcon: Icon(Icons.timer_outlined),
+                                  ),
+                                  validator: (value) {
+                                    if (value != '') {
+                                      return null;
+                                    }
+                                    return 'من فضلك اختار وقت البداية';
+                                  },
+                                  controller: _selectedStartTimeController),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              _selectTime(context, 'end');
+                            },
+                            child: AbsorbPointer(
+                              child: TextFormField(
+                                  textDirection: TextDirection.ltr,
+                                  textAlign: TextAlign.end,
+                                  decoration: const InputDecoration(
+                                    labelText: 'اختار وقت النهاية',
+                                    suffixIcon: Icon(Icons.timer_outlined),
+                                  ),
+                                  validator: (value) {
+                                    if (value != '') {
+                                      return null;
+                                    }
+                                    return 'من فضلك اختار وقت النهاية';
+                                  },
+                                  controller: _selectedEndTimeController),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          ElevatedButton(
+                              onPressed: _reserve,
+                              child: const Text('حجز القاعة'))
+                        ],
+                      ),
+                    ))),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -105,16 +303,25 @@ class _Reservations extends State<Reservations> {
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         actions: <Widget>[
-                IconButton(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ReservationsStatus(hallName: widget.hallName,))), icon:  const Icon(Icons.pending_actions), tooltip: 'متابعة الحجوزات',),
-                const SizedBox(width: 10),
-              ],
+          IconButton(
+            onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => ReservationsStatus(
+                          hallName: widget.hallName,
+                        ))),
+            icon: const Icon(Icons.pending_actions),
+            tooltip: 'متابعة الحجوزات',
+          ),
+          const SizedBox(width: 10),
+        ],
       ),
       body: Container(
           alignment: Alignment.center,
           margin: const EdgeInsets.all(10),
           child: Column(children: [
             Text(
-              'مواعيد الحجز في ${widget.hallName} (${_calendarFormat.name == 'month'? 'الشهر': _calendarFormat.name == 'week'? 'الاسبوع': 'النص شهر'} دة)',
+              'مواعيد الحجز في ${widget.hallName} (${_calendarFormat.name == 'month' ? 'الشهر' : _calendarFormat.name == 'week' ? 'الاسبوع' : 'النص شهر'} دة)',
               textDirection: TextDirection.rtl,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
