@@ -7,8 +7,9 @@ import 'package:table_calendar/table_calendar.dart';
 import '../utils.dart';
 
 class Reservations extends StatefulWidget {
-  const Reservations({super.key, required this.hallName});
+  const Reservations({super.key, required this.hallID , required this.hallName});
 
+  final String hallID;
   final String hallName;
 
   @override
@@ -114,7 +115,7 @@ class _Reservations extends State<Reservations> {
       if (_selectedDate!.isBefore(todayDateOnly) ||
           (_selectedEndTime!.hour <= _selectedStartTime!.hour &&
               _selectedEndTime!.minute <= _selectedStartTime!.minute)) {
-        showDateError();
+        showDefaultMessage('الميعاد غلط','من فضلك اتأكد ان التاريخ والميعاد مكتوبين صح');
       } else {
         form.save();
         _createNewReservation();
@@ -123,19 +124,40 @@ class _Reservations extends State<Reservations> {
   }
 
   Future<void> _createNewReservation() async {
-   
+    DateTime finalStartDate = DateTime(_selectedDate!.year,_selectedDate!.month,_selectedDate!.day, _selectedStartTime!.hour, _selectedStartTime!.minute);
+    DateTime finalEndDate = DateTime(_selectedDate!.year,_selectedDate!.month,_selectedDate!.day, _selectedEndTime!.hour, _selectedEndTime!.minute);
+    final response = await http.post(Uri.parse('https://churchapp-tstf.onrender.com/reservation/${widget.hallID}'), headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+      'Authorization': userToken!
+    },
+    body: jsonEncode({
+      "reason": _newReservationReason,
+      "startTime": finalStartDate.toIso8601String(),
+      "endTime": finalEndDate.toIso8601String(),
+    })
+    );
+    switch(response.statusCode){
+      case 201: {
+        showDefaultMessage('مستني الموافقة', 'طلب الحجز اتبعت ومستني الموافقة تقدر تتابع الحجز في صفحة متباعة الحجوزات');
+      } break;
+      case 404: {
+        showDefaultMessage('القاعة محجوزة', 'للأسف القاعة محجوزة في الميعاد دة');
+      } break;
+      default:
+        showDefaultMessage('حصل مشكلة', 'حصل مشكلة في السيرفر');
+    }
   }
 
-  Future<void> showDateError() {
+  Future<void> showDefaultMessage(String title, String content) {
     return showDialog(
         context: context,
         builder: (BuildContext context) {
           return Directionality(
             textDirection: TextDirection.rtl,
             child: AlertDialog(
-              title: const Text('الميعاد غلط'),
+              title: Text(title, textAlign: TextAlign.center,),
               content:
-                  const Text('من فضلك اتأكد ان التاريخ والميعاد مكتوبين صح'),
+                   Text(content),
               actions: <Widget>[
                 TextButton(
                     onPressed: () => Navigator.pop(context),
@@ -178,7 +200,6 @@ class _Reservations extends State<Reservations> {
         _selectedDateController.text =
             '${picked.day}/${picked.month}/${picked.year}';
         _selectedDate = picked;
-        print('${picked.day}/${picked.month}/${picked.year}');
       });
     }
   }
@@ -195,7 +216,6 @@ class _Reservations extends State<Reservations> {
             setState(() {
               _selectedStartTimeController.text = picked.format(context);
               _selectedStartTime = picked;
-              print(picked.format(context));
             });
           }
         }
@@ -208,7 +228,6 @@ class _Reservations extends State<Reservations> {
             setState(() {
               _selectedEndTimeController.text = picked.format(context);
               _selectedEndTime = picked;
-              print(picked.format(context));
             });
           }
         }

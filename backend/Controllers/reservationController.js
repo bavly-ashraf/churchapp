@@ -4,7 +4,7 @@ const AppError = require('../Utils/AppError');
 const createReservation = async (req, res, next) => {
     const { id } = req.params;
     const { startTime, endTime } = req.body;
-    const foundedReservations = await Reservation.find({hall:id,status:'Approved',$or:[{startTime: {$lte: startTime},endTime: {$gte: startTime}}, {startTime: {$lte: endTime},endTime: {$gte: endTime}}, {startTime: {$lte: startTime},endTime: {$gte: endTime}}]});
+    const foundedReservations = await Reservation.find({hall:id,status:'Approved',$or:[{startTime: {$lt: startTime},endTime: {$gt: startTime}}, {startTime: {$lt: endTime},endTime: {$gt: endTime}}, {startTime: {$lte: startTime},endTime: {$gte: endTime}}]});
     if (foundedReservations && foundedReservations.length > 0) return next(new AppError('Already reserved',404));
     const newReservation = await Reservation.create({...req.body, hall:id, reserver:req.user.id});
     res.status(201).json({message:'success',newReservation});

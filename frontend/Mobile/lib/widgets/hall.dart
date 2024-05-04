@@ -17,7 +17,7 @@ class Hall extends StatelessWidget {
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => Reservations(hallName: hallName)));
+              builder: (context) => Reservations(hallID: hallID,hallName: hallName)));
     }
 
     Future<void> deleteHall() async {
