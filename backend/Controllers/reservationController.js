@@ -33,7 +33,7 @@ const changeStatus = async (req, res, next) => {
     const { status } = req.body;
     if(status == 'Approved'){
         const foundedReservation = await Reservation.findById(id);
-        const conflictingReservations = await Reservation.find({hall:foundedReservation.hall,status:'Approved',$or:[{startTime: {$lte: foundedReservation.startTime},endTime: {$gte: foundedReservation.startTime}}, {startTime: {$lte: foundedReservation.endTime},endTime: {$gte: foundedReservation.endTime}}, {startTime: {$lte: foundedReservation.startTime},endTime: {$gte: foundedReservation.endTime}}]});
+        const conflictingReservations = await Reservation.find({hall:foundedReservation.hall,status:'Approved',$or:[{startTime: {$lt: foundedReservation.startTime},endTime: {$gt: foundedReservation.startTime}}, {startTime: {$lt: foundedReservation.endTime},endTime: {$gt: foundedReservation.endTime}}, {startTime: {$lte: foundedReservation.startTime},endTime: {$gte: foundedReservation.endTime}}]});
         if (conflictingReservations && conflictingReservations.length > 0) return next(new AppError('Already reserved',404));
     }
     const updatedReservation = await Reservation.findByIdAndUpdate(id, {status},{new:true});

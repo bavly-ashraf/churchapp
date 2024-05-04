@@ -148,7 +148,11 @@ class _Reservations extends State<Reservations> {
         showDefaultMessage('حصل مشكلة', 'حصل مشكلة في السيرفر');
     }
     }catch(e){
+      if(e.toString().contains('ClientException')){
+        showDefaultMessage('مفيش نت', 'اتأكد ان النت شغال وجرب تاني');
+      }else{
         showDefaultMessage('حصل مشكلة', 'حصل مشكلة في السيرفر');
+      }
     }
   }
 

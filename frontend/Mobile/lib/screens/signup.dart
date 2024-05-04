@@ -19,6 +19,7 @@ class _SignupPageState extends State<SignupPage> {
   String? _email;
   String? _mobile;
   String? _pass;
+  bool loading = false;
   // String? _churchCode;
 
   void _createNewAccount() {
@@ -51,6 +52,9 @@ class _SignupPageState extends State<SignupPage> {
 
   Future<void> signUp() async {
     try {
+      setState(() {
+        loading = true;
+      });
       final response = await http.post(
         url,
         headers: <String, String>{
@@ -64,6 +68,9 @@ class _SignupPageState extends State<SignupPage> {
         }),
       );
       if (response.statusCode == 201) {
+        setState(() {
+          loading = false;
+        });
         if (mounted) {
           showDialog(
               context: context,
@@ -131,8 +138,8 @@ class _SignupPageState extends State<SignupPage> {
             builder: (context) => Directionality(
                   textDirection: TextDirection.rtl,
                   child: AlertDialog(
-                    title: const Text('حصل مشكلة'),
-                    content: const Text('حصل مشكلة في السيرفر'),
+                    title: Text(e.toString().contains('ClientException')?'مفيش نت':'حصل مشكلة'),
+                    content: Text(e.toString().contains('ClientException')? 'اتأكد ان النت شغال وجرب تاني':'حصل مشكلة في السيرفر'),
                     actions: <Widget>[
                       TextButton(
                           onPressed: () => Navigator.pop(context),
@@ -247,8 +254,8 @@ class _SignupPageState extends State<SignupPage> {
                           // ),
                           const SizedBox(height: 30),
                           ElevatedButton(
-                              onPressed: _createNewAccount,
-                              child: const Text('اعمل حساب جديد'))
+                              onPressed: loading? null: _createNewAccount,
+                              child: loading? const Padding( padding: EdgeInsets.all(8) ,child: CircularProgressIndicator()): const Text('اعمل حساب جديد'))
                         ],
                       )))
             ],

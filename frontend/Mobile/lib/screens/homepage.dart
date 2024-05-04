@@ -93,8 +93,8 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
               builder: (context) => Directionality(
                     textDirection: TextDirection.rtl,
                     child: AlertDialog(
-                      title: const Text('حصل مشكلة'),
-                      content: const Text('حصل مشكلة في السيرفر'),
+                    title: Text(e.toString().contains('ClientException')?'مفيش نت':'حصل مشكلة'),
+                    content: Text(e.toString().contains('ClientException')? 'اتأكد ان النت شغال وجرب تاني':'حصل مشكلة في السيرفر'),
                       actions: <Widget>[
                         TextButton(
                             onPressed: () => Navigator.pop(context),
@@ -147,8 +147,8 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
               builder: (context) => Directionality(
                     textDirection: TextDirection.rtl,
                     child: AlertDialog(
-                      title: const Text('حصل مشكلة'),
-                      content: const Text('حصل مشكلة في السيرفر'),
+                    title: Text(e.toString().contains('ClientException')?'مفيش نت':'حصل مشكلة'),
+                    content: Text(e.toString().contains('ClientException')? 'اتأكد ان النت شغال وجرب تاني':'حصل مشكلة في السيرفر'),
                       actions: <Widget>[
                         TextButton(
                             onPressed: () => Navigator.pop(context),

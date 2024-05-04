@@ -19,6 +19,7 @@ class _LoginPageState extends State<LoginPage> {
 
   String? _userName;
   String? _pass;
+  bool loading = false;
 
   void _submit() {
     final form = _formKey.currentState;
@@ -50,6 +51,9 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> login() async {
     try {
+      setState(() {
+        loading = true;
+      });
       final response = await http.post(
         url,
         headers: <String, String>{
@@ -61,6 +65,9 @@ class _LoginPageState extends State<LoginPage> {
         }),
       );
       if (response.statusCode == 200) {
+        setState(() {
+          loading = false;
+        });
         final decodedResponse = jsonDecode(response.body);
         if (decodedResponse.containsKey('token')){
           final prefs = await SharedPreferences.getInstance();
@@ -69,6 +76,9 @@ class _LoginPageState extends State<LoginPage> {
           _goToHompage();
         }
       } else if(response.statusCode == 404){
+        setState(() {
+          loading = false;
+        });
                   if (mounted) {
             showDialog(
                 context: context,
@@ -87,14 +97,17 @@ class _LoginPageState extends State<LoginPage> {
           }
       }
     } catch (e) {
+      setState(() {
+        loading = false;
+      });
       if (mounted) {
         showDialog(
             context: context,
             builder: (context) => Directionality(
                   textDirection: TextDirection.rtl,
                   child: AlertDialog(
-                    title: const Text('حصل مشكلة'),
-                    content: const Text('حصل مشكلة في السيرفر'),
+                    title: Text(e.toString().contains('ClientException')?'مفيش نت':'حصل مشكلة'),
+                    content: Text(e.toString().contains('ClientException')? 'اتأكد ان النت شغال وجرب تاني':'حصل مشكلة في السيرفر'),
                     actions: <Widget>[
                       TextButton(
                           onPressed: () => Navigator.pop(context),
@@ -161,7 +174,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(height: 30),
                           ElevatedButton(
-                              onPressed: _submit, child: const Text('دخول')),
+                              onPressed: loading? null: _submit, child: loading? const Padding( padding: EdgeInsets.all(8) ,child: CircularProgressIndicator()): const Text('دخول')),
                           const SizedBox(height: 10),
                           ElevatedButton(
                               onPressed: () => Navigator.push(

@@ -85,15 +85,14 @@ class _PostState extends State<Post> {
         }
       }
     } catch (e) {
-      print(e);
       if (mounted) {
         showDialog(
             context: context,
             builder: (context) => Directionality(
                   textDirection: ui.TextDirection.rtl,
                   child: AlertDialog(
-                    title: const Text('حصل مشكلة'),
-                    content: const Text('حصل مشكلة في السيرفر'),
+                    title: Text(e.toString().contains('ClientException')?'مفيش نت':'حصل مشكلة'),
+                    content: Text(e.toString().contains('ClientException')? 'اتأكد ان النت شغال وجرب تاني':'حصل مشكلة في السيرفر'),
                     actions: <Widget>[
                       TextButton(
                           onPressed: () => Navigator.pop(context),
@@ -181,8 +180,8 @@ class _PostState extends State<Post> {
             builder: (context) => Directionality(
                   textDirection: ui.TextDirection.rtl,
                   child: AlertDialog(
-                    title: const Text('حصل مشكلة'),
-                    content: const Text('حصل مشكلة في السيرفر'),
+                    title: Text(e.toString().contains('ClientException')?'مفيش نت':'حصل مشكلة'),
+                    content: Text(e.toString().contains('ClientException')? 'اتأكد ان النت شغال وجرب تاني':'حصل مشكلة في السيرفر'),
                     actions: <Widget>[
                       TextButton(
                           onPressed: () => Navigator.pop(context),
@@ -238,8 +237,8 @@ class _PostState extends State<Post> {
             builder: (context) => Directionality(
                   textDirection: ui.TextDirection.rtl,
                   child: AlertDialog(
-                    title: const Text('حصل مشكلة'),
-                    content: const Text('حصل مشكلة في السيرفر'),
+                    title: Text(e.toString().contains('ClientException')?'مفيش نت':'حصل مشكلة'),
+                    content: Text(e.toString().contains('ClientException')? 'اتأكد ان النت شغال وجرب تاني':'حصل مشكلة في السيرفر'),
                     actions: <Widget>[
                       TextButton(
                           onPressed: () => Navigator.pop(context),

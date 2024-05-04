@@ -76,8 +76,8 @@ Future<void> getAllHalls() async {
             builder: (context) => Directionality(
                   textDirection: TextDirection.rtl,
                   child: AlertDialog(
-                    title: const Text('حصل مشكلة'),
-                    content: const Text('حصل مشكلة في السيرفر'),
+                    title: Text(e.toString().contains('ClientException')?'مفيش نت':'حصل مشكلة'),
+                    content: Text(e.toString().contains('ClientException')? 'اتأكد ان النت شغال وجرب تاني':'حصل مشكلة في السيرفر'),
                     actions: <Widget>[
                       TextButton(
                           onPressed: () => Navigator.pop(context),
@@ -92,18 +92,21 @@ Future<void> getAllHalls() async {
     @override
     Widget build(BuildContext context){
       return Scaffold(
-        body: Directionality(
-          textDirection: TextDirection.rtl,
-          child: (
-            loading == true?
-            const Center(
-              child: CircularProgressIndicator(),
-            ) :
-            GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
-            itemCount: hallNames.length,
-            itemBuilder: (context , index)=> Hall(hallID: hallNames[index]['_id'], hallName: hallNames[index]['name'], getAllHalls: getAllHalls,userToken: userToken!)
-            )
+        body: RefreshIndicator(
+          onRefresh: getAllHalls,
+          child: Directionality(
+            textDirection: TextDirection.rtl,
+            child: (
+              loading == true?
+              const Center(
+                child: CircularProgressIndicator(),
+              ) :
+              GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+              itemCount: hallNames.length,
+              itemBuilder: (context , index)=> Hall(hallID: hallNames[index]['_id'], hallName: hallNames[index]['name'], getAllHalls: getAllHalls,userToken: userToken!)
+              )
+            ),
           ),
         ),
       );
