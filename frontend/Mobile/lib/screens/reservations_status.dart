@@ -1,10 +1,12 @@
-import 'package:flutter/cupertino.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ReservationsStatus extends StatefulWidget {
-   const ReservationsStatus({super.key, required this.hallName});
+   const ReservationsStatus({super.key, required this.hallID ,required this.hallName});
 
+  final String hallID;
   final String hallName;
 
   @override
@@ -12,13 +14,76 @@ class ReservationsStatus extends StatefulWidget {
 }
 
 class _Reservations extends State<ReservationsStatus> {
-  List<String> reservations = ['',''];
-  String role = 'Admin';
+  dynamic reservations = [];
   String status = 'Pending';
+  dynamic userData;
+  String? userToken;
+  String role = 'user';
 
   @override
   void initState() {
     super.initState();
+    getUserData();
+  }
+
+    Future<void> getUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    userToken = prefs.getString('token');
+    userData = jsonDecode(prefs.getString('userData')!);
+    role = userData['role'];
+  getAllReservations();
+  }
+    Future<void> getAllReservations() async {
+    try {
+      final response = await http.get(
+        Uri.parse( role == 'user'?
+            'https://churchapp-tstf.onrender.com/reservation/user/${widget.hallID}':
+            'https://churchapp-tstf.onrender.com/reservation/pending/${widget.hallID}'
+            ),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': userToken!
+        },
+      );
+      switch(response.statusCode){
+        case 200: {
+          setState(() {
+            reservations = jsonDecode(response.body)["foundedReservations"];
+          });
+          print(jsonDecode(response.body)["foundedReservations"]);
+        } break;
+        default: 
+        showDefaultMessage('حصل مشكلة', 'حصل مشكلة في السيرفر');
+      }
+
+    } catch (e) {
+        showDefaultMessage('حصل مشكلة', 'حصل مشكلة في السيرفر');
+    }
+  }
+
+  Future<void> showDefaultMessage(String title, String content, [bool closeAll = false]) {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Directionality(
+            textDirection: TextDirection.rtl,
+            child: AlertDialog(
+              title: Text(title, textAlign: TextAlign.center,),
+              content:
+                   Text(content),
+              actions: <Widget>[
+                TextButton(
+                    onPressed: () => {
+                      Navigator.pop(context),
+                      if(closeAll == true){
+                      Navigator.pop(context)
+                      }
+                      },
+                    child: const Text('تمام'))
+              ],
+            ),
+          );
+        });
   }
 
   @override
@@ -51,23 +116,23 @@ class _Reservations extends State<ReservationsStatus> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         const Icon(Icons.timer,size: 60,),
-                        const Column(
+                        Column(
                           children: <Widget>[
-                            Text('ميعاد الحجز',style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),),
-                            SizedBox(height: 8,),
-                            Text('سبب الحجز'),
-                            SizedBox(height: 8,),
-                            Text('الحاجز')
+                            const Text('ميعاد الحجز',style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),),
+                            const SizedBox(height: 8,),
+                            Text(reservations[index]['reason']),
+                            const SizedBox(height: 8,),
+                            const Text('الحاجز')
                           ],
                         ),
-                        status == 'Pending' && role == 'Admin'?
+                        status == 'Pending' && role == 'admin'?
                         const Row(
                           children: <Widget>[
                         IconButton(onPressed: null, tooltip: 'موافقة' , icon: Icon(Icons.check_circle_outline_outlined,size: 40, color: Colors.green,)),
                         IconButton(onPressed: null, tooltip: 'رفض' , icon: Icon(Icons.cancel_outlined, size: 40, color: Colors.red,)),
                           ],
                         ) : 
-                        status == 'Pending' && role == 'User'?
+                        status == 'Pending' && role == 'user'?
                         const Padding(padding: EdgeInsets.fromLTRB(0, 0, 5, 0), child: Text('مستني الموافقة', style: TextStyle(color: Colors.blue, fontSize: 20),)) : 
                         status == 'Rejected'? 
                         const Padding(padding: EdgeInsets.fromLTRB(0, 0, 5, 0), child: Text('اترفض', style: TextStyle(color: Colors.red, fontSize: 25),)) : 

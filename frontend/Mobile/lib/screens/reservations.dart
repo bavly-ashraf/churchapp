@@ -126,6 +126,7 @@ class _Reservations extends State<Reservations> {
   Future<void> _createNewReservation() async {
     DateTime finalStartDate = DateTime(_selectedDate!.year,_selectedDate!.month,_selectedDate!.day, _selectedStartTime!.hour, _selectedStartTime!.minute);
     DateTime finalEndDate = DateTime(_selectedDate!.year,_selectedDate!.month,_selectedDate!.day, _selectedEndTime!.hour, _selectedEndTime!.minute);
+    try{
     final response = await http.post(Uri.parse('https://churchapp-tstf.onrender.com/reservation/${widget.hallID}'), headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
       'Authorization': userToken!
@@ -138,7 +139,7 @@ class _Reservations extends State<Reservations> {
     );
     switch(response.statusCode){
       case 201: {
-        showDefaultMessage('مستني الموافقة', 'طلب الحجز اتبعت ومستني الموافقة تقدر تتابع الحجز في صفحة متباعة الحجوزات');
+        showDefaultMessage('مستني الموافقة', 'طلب الحجز اتبعت ومستني الموافقة تقدر تتابع الحجز في صفحة متباعة الحجوزات', true);
       } break;
       case 404: {
         showDefaultMessage('القاعة محجوزة', 'للأسف القاعة محجوزة في الميعاد دة');
@@ -146,9 +147,12 @@ class _Reservations extends State<Reservations> {
       default:
         showDefaultMessage('حصل مشكلة', 'حصل مشكلة في السيرفر');
     }
+    }catch(e){
+        showDefaultMessage('حصل مشكلة', 'حصل مشكلة في السيرفر');
+    }
   }
 
-  Future<void> showDefaultMessage(String title, String content) {
+  Future<void> showDefaultMessage(String title, String content, [bool closeAll = false]) {
     return showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -160,7 +164,12 @@ class _Reservations extends State<Reservations> {
                    Text(content),
               actions: <Widget>[
                 TextButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => {
+                      Navigator.pop(context),
+                      if(closeAll == true){
+                      Navigator.pop(context)
+                      }
+                      },
                     child: const Text('تمام'))
               ],
             ),
@@ -367,6 +376,7 @@ class _Reservations extends State<Reservations> {
                 context,
                 MaterialPageRoute(
                     builder: (context) => ReservationsStatus(
+                          hallID: widget.hallID,
                           hallName: widget.hallName,
                         ))),
             icon: const Icon(Icons.pending_actions),
