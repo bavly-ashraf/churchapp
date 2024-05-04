@@ -1,5 +1,8 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:church/screens/reservations_status.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../utils.dart';
 
@@ -31,10 +34,13 @@ class _Reservations extends State<Reservations> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedStartTime;
   TimeOfDay? _selectedEndTime;
+  String? userToken;
+  dynamic userData;
 
   @override
   void initState() {
     super.initState();
+    getUserData();
 
     _selectedDay = _focusedDay;
     _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
@@ -44,6 +50,12 @@ class _Reservations extends State<Reservations> {
   void dispose() {
     _selectedEvents.dispose();
     super.dispose();
+  }
+
+  Future<void> getUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    userToken = prefs.getString('token');
+    userData = jsonDecode(prefs.getString('userData')!);
   }
 
   List<Event> _getEventsForDay(DateTime day) {
@@ -97,13 +109,41 @@ class _Reservations extends State<Reservations> {
     final form = _newReservationFormKey.currentState;
     if (form != null && form.validate()) {
       DateTime today = DateTime.now();
-      DateTime todayDateOnly = DateTime(today.year, today.month, today.day, 0, 0, 0);
-      if (_selectedDate!
-          .isBefore(todayDateOnly)) {
-        print('wrong date');
+      DateTime todayDateOnly =
+          DateTime(today.year, today.month, today.day, 0, 0, 0);
+      if (_selectedDate!.isBefore(todayDateOnly) ||
+          (_selectedEndTime!.hour <= _selectedStartTime!.hour &&
+              _selectedEndTime!.minute <= _selectedStartTime!.minute)) {
+        showDateError();
+      } else {
+        form.save();
+        _createNewReservation();
       }
-      form.save();
     }
+  }
+
+  Future<void> _createNewReservation() async {
+   
+  }
+
+  Future<void> showDateError() {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Directionality(
+            textDirection: TextDirection.rtl,
+            child: AlertDialog(
+              title: const Text('الميعاد غلط'),
+              content:
+                  const Text('من فضلك اتأكد ان التاريخ والميعاد مكتوبين صح'),
+              actions: <Widget>[
+                TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('تمام'))
+              ],
+            ),
+          );
+        });
   }
 
   Future<void> showNewReservationModal() {
