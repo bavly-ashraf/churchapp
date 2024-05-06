@@ -444,7 +444,30 @@ class _Reservations extends State<Reservations> {
                           borderRadius: BorderRadius.circular(12.0),
                         ),
                         child: ListTile(
-                          onTap: () => print('${value[index]}'),
+                          onTap: () {
+                            showDialog(context: context, builder: (BuildContext context){
+                              return Directionality(
+                                textDirection: TextDirection.rtl,
+                                child: AlertDialog(
+
+                                  title: const Text('تفاصيل الحجز', textAlign: TextAlign.center,),
+                                  content: const Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                    Text('سبب الحجز: تجربة'),
+                                    Text('من: وقت'),
+                                    Text('الى: وقت'),
+                                    Text('الحاجز: يوزر'),
+                                  ],),
+                                  actions: <Widget>[
+                                    TextButton(onPressed: () => Navigator.pop(context), child: const Text('تمام'))
+                                  ],
+                                ),
+                              );
+                            });
+                          },
+                          onLongPress: () => print('${value[index]}'),
                           title: Text('${value[index]}'),
                         ),
                       );

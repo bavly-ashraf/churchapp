@@ -12,13 +12,13 @@ const createReservation = async (req, res, next) => {
 
 const getPendingReservations = async (req, res, next) => {
     const { hallID } = req.params;
-    const foundedReservations = await Reservation.find({hall:hallID, status:'Pending'}).populate('reserver');
+    const foundedReservations = await Reservation.find({hall:hallID, status:'Pending'}).populate('reserver').sort({'createdAt': -1});
     res.status(200).json({message:'success', foundedReservations});
 };
 
 const getReservationsForUser = async (req, res, next) => {
     const { hallID } = req.params;
-    const foundedReservations = await Reservation.find({hall:hallID,reserver:req.user.id}).populate('reserver');
+    const foundedReservations = await Reservation.find({hall:hallID,reserver:req.user.id}).populate('reserver').sort({'createdAt': -1});
     res.status(200).json({message:'success', foundedReservations});
 };
 

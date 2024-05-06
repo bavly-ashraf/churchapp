@@ -240,11 +240,13 @@ class _Reservations extends State<ReservationsStatus> {
                                         Text(
                                           '${DateFormat('hh:mm a').format(DateTime.parse(reservations[index]['startTime']))} - ${DateFormat('hh:mm a').format(DateTime.parse(reservations[index]['endTime']))}',
                                         ),
+                                        if(role == 'admin') ...[
                                         const SizedBox(
                                           height: 8,
                                         ),
                                         Text(reservations[index]['reserver']
                                             ['username'])
+                                        ]
                                       ],
                                     ),
                                     reservations[index]['status'] ==
