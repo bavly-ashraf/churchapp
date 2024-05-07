@@ -93,6 +93,9 @@ class _SignupPageState extends State<SignupPage> {
               });
         }
       } else if(response.statusCode == 403){
+        setState(() {
+          loading = false;
+        });
                   if (mounted) {
             showDialog(
                 context: context,
@@ -110,6 +113,9 @@ class _SignupPageState extends State<SignupPage> {
                     ));
           }
       } else {
+        setState(() {
+          loading = false;
+        });
         final decodedResponse = jsonDecode(response.body);
         if (decodedResponse.containsKey('message') &&
             decodedResponse['message']
@@ -151,6 +157,9 @@ class _SignupPageState extends State<SignupPage> {
         }
       }
     } catch (e) {
+      setState(() {
+        loading = false;
+      });
       if (mounted) {
         showDialog(
             context: context,
