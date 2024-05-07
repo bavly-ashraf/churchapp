@@ -1,13 +1,17 @@
+import 'dart:collection';
 import 'dart:convert';
+import 'dart:ui' as ui;
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:church/screens/reservations_status.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../utils.dart';
 
 class Reservations extends StatefulWidget {
-  const Reservations({super.key, required this.hallID , required this.hallName});
+  const Reservations({super.key, required this.hallID, required this.hallName});
 
   final String hallID;
   final String hallName;
@@ -19,12 +23,8 @@ class Reservations extends StatefulWidget {
 class _Reservations extends State<Reservations> {
   late final ValueNotifier<List<Event>> _selectedEvents;
   CalendarFormat _calendarFormat = CalendarFormat.week;
-  RangeSelectionMode _rangeSelectionMode = RangeSelectionMode
-      .toggledOff; // Can be toggled on/off by longpressing a date
   DateTime? _selectedDay;
   DateTime _focusedDay = DateTime.now();
-  DateTime? _rangeStart;
-  DateTime? _rangeEnd;
   final _newReservationFormKey = GlobalKey<FormState>();
   String? _newReservationReason;
   final TextEditingController _selectedDateController = TextEditingController();
@@ -37,12 +37,15 @@ class _Reservations extends State<Reservations> {
   TimeOfDay? _selectedEndTime;
   String? userToken;
   dynamic userData;
+  String role = 'user';
+  List<dynamic> initialEventList = [];
+  bool loading = false;
 
   @override
   void initState() {
     super.initState();
     getUserData();
-
+    getEventsAPI(kFirstDay, kLastDay);
     _selectedDay = _focusedDay;
     _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
   }
@@ -57,20 +60,37 @@ class _Reservations extends State<Reservations> {
     final prefs = await SharedPreferences.getInstance();
     userToken = prefs.getString('token');
     userData = jsonDecode(prefs.getString('userData')!);
+    role = userData['role'];
   }
 
   List<Event> _getEventsForDay(DateTime day) {
-    // Implementation example
-    return kEvents[day] ?? [];
+    final List<Event> eventsList = initialEventList
+        .where((element) =>
+            element['startTime'].split('T')[0] ==
+            day.toIso8601String().split('T')[0])
+        .toList()
+        .map((el) => Event(el['reason'], DateTime.parse(el['startTime']),
+            DateTime.parse(el['endTime']), el['reserver']['username'], el['_id']))
+        .toList();
+    return eventsList;
   }
 
-  List<Event> _getEventsForRange(DateTime start, DateTime end) {
-    // Implementation example
-    final days = daysInRange(start, end);
-
-    return [
-      for (final d in days) ..._getEventsForDay(d),
-    ];
+  Future<void> getEventsAPI(DateTime firstDay, DateTime lastDay) async {
+    setState(() {
+      loading = true;
+    });
+    final response = await http.get(
+      Uri.parse(
+          'https://churchapp-tstf.onrender.com/reservation/calendar/662b1d60e9c6e22fd66bc96f?firstDay=${firstDay.toIso8601String()}&lastDay=${lastDay.toIso8601String()}'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': userToken!
+      },
+    );
+    setState(() {
+      initialEventList = jsonDecode(response.body)['foundedReservations'];
+      loading = false;
+    });
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
@@ -78,31 +98,39 @@ class _Reservations extends State<Reservations> {
       setState(() {
         _selectedDay = selectedDay;
         _focusedDay = focusedDay;
-        _rangeStart = null; // Important to clean those
-        _rangeEnd = null;
-        _rangeSelectionMode = RangeSelectionMode.toggledOff;
       });
 
       _selectedEvents.value = _getEventsForDay(selectedDay);
     }
   }
 
-  void _onRangeSelected(DateTime? start, DateTime? end, DateTime focusedDay) {
-    setState(() {
-      _selectedDay = null;
-      _focusedDay = focusedDay;
-      _rangeStart = start;
-      _rangeEnd = end;
-      _rangeSelectionMode = RangeSelectionMode.toggledOn;
+  void deleteEventDialog(String id){
+    showDialog(context: context, builder: (BuildContext context){
+      return Directionality(
+        textDirection: ui.TextDirection.rtl,
+        child: AlertDialog(
+          title: const Text('مسح الحجز'),
+          content: const Text('متأكد انك عايز تمسح الحجز؟'),
+          actions: <Widget>[
+            TextButton(onPressed: () => _deleteEvent(id), child: const Text('اه')),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('لا')),
+          ],
+        ),
+      );
     });
+  }
 
-    // `start` or `end` could be null
-    if (start != null && end != null) {
-      _selectedEvents.value = _getEventsForRange(start, end);
-    } else if (start != null) {
-      _selectedEvents.value = _getEventsForDay(start);
-    } else if (end != null) {
-      _selectedEvents.value = _getEventsForDay(end);
+  Future<void> _deleteEvent(String id) async{
+    final response = await http.delete(
+      Uri.parse(
+          'https://churchapp-tstf.onrender.com/reservation/$id'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': userToken!
+      },
+    );
+    if(response.statusCode == 200){
+      getEventsAPI(kFirstDay, kLastDay);
     }
   }
 
@@ -115,7 +143,8 @@ class _Reservations extends State<Reservations> {
       if (_selectedDate!.isBefore(todayDateOnly) ||
           (_selectedEndTime!.hour <= _selectedStartTime!.hour &&
               _selectedEndTime!.minute <= _selectedStartTime!.minute)) {
-        showDefaultMessage('الميعاد غلط','من فضلك اتأكد ان التاريخ والميعاد مكتوبين صح');
+        showDefaultMessage(
+            'الميعاد غلط', 'من فضلك اتأكد ان التاريخ والميعاد مكتوبين صح');
       } else {
         form.save();
         _createNewReservation();
@@ -124,56 +153,73 @@ class _Reservations extends State<Reservations> {
   }
 
   Future<void> _createNewReservation() async {
-    DateTime finalStartDate = DateTime(_selectedDate!.year,_selectedDate!.month,_selectedDate!.day, _selectedStartTime!.hour, _selectedStartTime!.minute);
-    DateTime finalEndDate = DateTime(_selectedDate!.year,_selectedDate!.month,_selectedDate!.day, _selectedEndTime!.hour, _selectedEndTime!.minute);
-    try{
-    final response = await http.post(Uri.parse('https://churchapp-tstf.onrender.com/reservation/${widget.hallID}'), headers: <String, String>{
-      'Content-Type': 'application/json; charset=UTF-8',
-      'Authorization': userToken!
-    },
-    body: jsonEncode({
-      "reason": _newReservationReason,
-      "startTime": finalStartDate.toIso8601String(),
-      "endTime": finalEndDate.toIso8601String(),
-    })
-    );
-    switch(response.statusCode){
-      case 201: {
-        showDefaultMessage('مستني الموافقة', 'طلب الحجز اتبعت ومستني الموافقة تقدر تتابع الحجز في صفحة متباعة الحجوزات', true);
-      } break;
-      case 404: {
-        showDefaultMessage('القاعة محجوزة', 'للأسف القاعة محجوزة في الميعاد دة');
-      } break;
-      default:
-        showDefaultMessage('حصل مشكلة', 'حصل مشكلة في السيرفر');
-    }
-    }catch(e){
-      if(e.toString().contains('ClientException')){
+    DateTime finalStartDate = DateTime(
+        _selectedDate!.year,
+        _selectedDate!.month,
+        _selectedDate!.day,
+        _selectedStartTime!.hour,
+        _selectedStartTime!.minute);
+    DateTime finalEndDate = DateTime(_selectedDate!.year, _selectedDate!.month,
+        _selectedDate!.day, _selectedEndTime!.hour, _selectedEndTime!.minute);
+    try {
+      final response = await http.post(
+          Uri.parse(
+              'https://churchapp-tstf.onrender.com/reservation/${widget.hallID}'),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+            'Authorization': userToken!
+          },
+          body: jsonEncode({
+            "reason": _newReservationReason,
+            "startTime": finalStartDate.toIso8601String(),
+            "endTime": finalEndDate.toIso8601String(),
+          }));
+      switch (response.statusCode) {
+        case 201:
+          {
+            showDefaultMessage(
+                'مستني الموافقة',
+                'طلب الحجز اتبعت ومستني الموافقة تقدر تتابع الحجز في صفحة متباعة الحجوزات',
+                true);
+          }
+          break;
+        case 404:
+          {
+            showDefaultMessage(
+                'القاعة محجوزة', 'للأسف القاعة محجوزة في الميعاد دة');
+          }
+          break;
+        default:
+          showDefaultMessage('حصل مشكلة', 'حصل مشكلة في السيرفر');
+      }
+    } catch (e) {
+      if (e.toString().contains('ClientException')) {
         showDefaultMessage('مفيش نت', 'اتأكد ان النت شغال وجرب تاني');
-      }else{
+      } else {
         showDefaultMessage('حصل مشكلة', 'حصل مشكلة في السيرفر');
       }
     }
   }
 
-  Future<void> showDefaultMessage(String title, String content, [bool closeAll = false]) {
+  Future<void> showDefaultMessage(String title, String content,
+      [bool closeAll = false]) {
     return showDialog(
         context: context,
         builder: (BuildContext context) {
           return Directionality(
-            textDirection: TextDirection.rtl,
+            textDirection: ui.TextDirection.rtl,
             child: AlertDialog(
-              title: Text(title, textAlign: TextAlign.center,),
-              content:
-                   Text(content),
+              title: Text(
+                title,
+                textAlign: TextAlign.center,
+              ),
+              content: Text(content),
               actions: <Widget>[
                 TextButton(
                     onPressed: () => {
-                      Navigator.pop(context),
-                      if(closeAll == true){
-                      Navigator.pop(context)
-                      }
-                      },
+                          Navigator.pop(context),
+                          if (closeAll == true) {Navigator.pop(context)}
+                        },
                     child: const Text('تمام'))
               ],
             ),
@@ -261,7 +307,7 @@ class _Reservations extends State<Reservations> {
             Padding(
                 padding: const EdgeInsets.all(10),
                 child: Directionality(
-                    textDirection: TextDirection.rtl,
+                    textDirection: ui.TextDirection.rtl,
                     child: Form(
                       key: _newReservationFormKey,
                       child: Column(
@@ -288,7 +334,7 @@ class _Reservations extends State<Reservations> {
                             },
                             child: AbsorbPointer(
                               child: TextFormField(
-                                  textDirection: TextDirection.ltr,
+                                  textDirection: ui.TextDirection.ltr,
                                   textAlign: TextAlign.end,
                                   decoration: const InputDecoration(
                                     labelText: 'اختار اليوم',
@@ -312,7 +358,7 @@ class _Reservations extends State<Reservations> {
                             },
                             child: AbsorbPointer(
                               child: TextFormField(
-                                  textDirection: TextDirection.ltr,
+                                  textDirection: ui.TextDirection.ltr,
                                   textAlign: TextAlign.end,
                                   decoration: const InputDecoration(
                                     labelText: 'اختار وقت البداية',
@@ -336,7 +382,7 @@ class _Reservations extends State<Reservations> {
                             },
                             child: AbsorbPointer(
                               child: TextFormField(
-                                  textDirection: TextDirection.ltr,
+                                  textDirection: ui.TextDirection.ltr,
                                   textAlign: TextAlign.end,
                                   decoration: const InputDecoration(
                                     labelText: 'اختار وقت النهاية',
@@ -395,37 +441,37 @@ class _Reservations extends State<Reservations> {
           child: Column(children: [
             Text(
               'مواعيد الحجز في ${widget.hallName} (${_calendarFormat.name == 'month' ? 'الشهر' : _calendarFormat.name == 'week' ? 'الاسبوع' : 'النص شهر'} دة)',
-              textDirection: TextDirection.rtl,
+              textDirection: ui.TextDirection.rtl,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            TableCalendar<Event>(
-              firstDay: kFirstDay,
-              lastDay: kLastDay,
-              focusedDay: _focusedDay,
-              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-              rangeStartDay: _rangeStart,
-              rangeEndDay: _rangeEnd,
-              calendarFormat: _calendarFormat,
-              rangeSelectionMode: _rangeSelectionMode,
-              eventLoader: _getEventsForDay,
-              startingDayOfWeek: StartingDayOfWeek.saturday,
-              calendarStyle: const CalendarStyle(
-                // Use `CalendarStyle` to customize the UI
-                outsideDaysVisible: false,
-              ),
-              onDaySelected: _onDaySelected,
-              onRangeSelected: _onRangeSelected,
-              onFormatChanged: (format) {
-                if (_calendarFormat != format) {
-                  setState(() {
-                    _calendarFormat = format;
-                  });
-                }
-              },
-              onPageChanged: (focusedDay) {
-                _focusedDay = focusedDay;
-              },
-            ),
+            loading
+                ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : TableCalendar<Event>(
+                    firstDay: kFirstDay,
+                    lastDay: kLastDay,
+                    focusedDay: _focusedDay,
+                    selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                    calendarFormat: _calendarFormat,
+                    eventLoader: _getEventsForDay,
+                    startingDayOfWeek: StartingDayOfWeek.saturday,
+                    calendarStyle: const CalendarStyle(
+                      // Use `CalendarStyle` to customize the UI
+                      outsideDaysVisible: false,
+                    ),
+                    onDaySelected: _onDaySelected,
+                    onFormatChanged: (format) {
+                      if (_calendarFormat != format) {
+                        setState(() {
+                          _calendarFormat = format;
+                        });
+                      }
+                    },
+                    onPageChanged: (focusedDay) {
+                      _focusedDay = focusedDay;
+                    },
+                  ),
             const SizedBox(height: 8.0),
             Expanded(
               child: ValueListenableBuilder<List<Event>>(
@@ -445,29 +491,80 @@ class _Reservations extends State<Reservations> {
                         ),
                         child: ListTile(
                           onTap: () {
-                            showDialog(context: context, builder: (BuildContext context){
-                              return Directionality(
-                                textDirection: TextDirection.rtl,
-                                child: AlertDialog(
-
-                                  title: const Text('تفاصيل الحجز', textAlign: TextAlign.center,),
-                                  content: const Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                    Text('سبب الحجز: تجربة'),
-                                    Text('من: وقت'),
-                                    Text('الى: وقت'),
-                                    Text('الحاجز: يوزر'),
-                                  ],),
-                                  actions: <Widget>[
-                                    TextButton(onPressed: () => Navigator.pop(context), child: const Text('تمام'))
-                                  ],
-                                ),
-                              );
-                            });
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return Directionality(
+                                    textDirection: ui.TextDirection.rtl,
+                                    child: AlertDialog(
+                                      title: const Text(
+                                        'تفاصيل الحجز',
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Row(
+                                            children: <Widget>[
+                                              const Text('سبب الحجز: '),
+                                              Text(
+                                                value[index].title,
+                                                style: const TextStyle(
+                                                    fontWeight:
+                                                        ui.FontWeight.bold),
+                                              ),
+                                            ],
+                                          ),
+                                                                                    Row(
+                                            children: <Widget>[
+                                              const Text('من: '),
+                                              Text(
+                                                DateFormat('hh:mm a').format(value[index].startTime),
+                                                textDirection: ui.TextDirection.ltr,
+                                                style: const TextStyle(
+                                                    fontWeight:
+                                                        ui.FontWeight.bold),
+                                              ),
+                                            ],
+                                          ),
+                                                                                    Row(
+                                            children: <Widget>[
+                                              const Text('الى: '),
+                                              Text(
+                                                DateFormat('hh:mm a').format(value[index].endTime),
+                                                textDirection: ui.TextDirection.ltr,
+                                                style: const TextStyle(
+                                                    fontWeight:
+                                                        ui.FontWeight.bold),
+                                              ),
+                                            ],
+                                          ),
+                                                                                    Row(
+                                            children: <Widget>[
+                                              const Text('الحاجز: '),
+                                              Text(
+                                                value[index].reserver,
+                                                style: const TextStyle(
+                                                    fontWeight:
+                                                        ui.FontWeight.bold),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      actions: <Widget>[
+                                        TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context),
+                                            child: const Text('تمام'))
+                                      ],
+                                    ),
+                                  );
+                                });
                           },
-                          onLongPress: () => print('${value[index]}'),
+                          onLongPress: role == 'admin'? () => deleteEventDialog(value[index].id) : null,
                           title: Text('${value[index]}'),
                         ),
                       );

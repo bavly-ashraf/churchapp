@@ -24,7 +24,14 @@ const getReservationsForUser = async (req, res, next) => {
 
 const getReservationsForCalendar = async (req, res, next) => {
     const { hallID } = req.params;
-    const foundedReservations = await Reservation.find({hall:hallID, status:'Approved'});
+    const { firstDay, lastDay } = req.query;
+    // const { day } = req.query;
+    // const startDate = new Date(day);
+    // startDate.setHours(0,0,0,0);
+    // const endDate = new Date(day);
+    // endDate.setHours(23,59,59,999);
+    // const foundedReservations = await Reservation.find({hall:hallID, startTime:{$gte:startDate, $lte:endDate} , status:'Approved'}).populate('reserver');
+    const foundedReservations = await Reservation.find({hall:hallID, startTime:{$gte:firstDay, $lte:lastDay} , status:'Approved'}).populate('reserver');
     res.status(200).json({message:'success',foundedReservations});
 };
 
