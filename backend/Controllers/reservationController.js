@@ -31,7 +31,7 @@ const getReservationsForCalendar = async (req, res, next) => {
     // const endDate = new Date(day);
     // endDate.setHours(23,59,59,999);
     // const foundedReservations = await Reservation.find({hall:hallID, startTime:{$gte:startDate, $lte:endDate} , status:'Approved'}).populate('reserver');
-    const foundedReservations = await Reservation.find({hall:hallID, startTime:{$gte:firstDay, $lte:lastDay} , status:'Approved'}).populate('reserver');
+    const foundedReservations = await Reservation.find({hall:hallID, startTime:{$gte:firstDay, $lte:lastDay} , status:'Approved'}).populate('reserver').sort({'createdAt': -1});
     res.status(200).json({message:'success',foundedReservations});
 };
 

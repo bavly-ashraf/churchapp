@@ -43,9 +43,9 @@ class _Reservations extends State<Reservations> {
   void initState() {
     super.initState();
     getUserData();
-    getEventsAPI(kFirstDay, kLastDay);
     _selectedDay = _focusedDay;
-    _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
+    // _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
+    _selectedEvents = ValueNotifier([]);
   }
 
   @override
@@ -59,6 +59,8 @@ class _Reservations extends State<Reservations> {
     userToken = prefs.getString('token');
     userData = jsonDecode(prefs.getString('userData')!);
     role = userData['role'];
+    await getEventsAPI(kFirstDay, kLastDay);
+    _selectedEvents.value = _getEventsForDay(_selectedDay!);
   }
 
   List<Event> _getEventsForDay(DateTime day) {
@@ -67,8 +69,12 @@ class _Reservations extends State<Reservations> {
             element['startTime'].split('T')[0] ==
             day.toIso8601String().split('T')[0])
         .toList()
-        .map((el) => Event(el['reason'], DateTime.parse(el['startTime']),
-            DateTime.parse(el['endTime']), el['reserver']['username'], el['_id']))
+        .map((el) => Event(
+            el['reason'],
+            DateTime.parse(el['startTime']),
+            DateTime.parse(el['endTime']),
+            el['reserver']['username'],
+            el['_id']))
         .toList();
     return eventsList;
   }
@@ -79,7 +85,7 @@ class _Reservations extends State<Reservations> {
     });
     final response = await http.get(
       Uri.parse(
-          'https://churchapp-tstf.onrender.com/reservation/calendar/662b1d60e9c6e22fd66bc96f?firstDay=${firstDay.toIso8601String()}&lastDay=${lastDay.toIso8601String()}'),
+          'https://churchapp-tstf.onrender.com/reservation/calendar/${widget.hallID}?firstDay=${firstDay.toIso8601String()}&lastDay=${lastDay.toIso8601String()}'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': userToken!
@@ -102,33 +108,39 @@ class _Reservations extends State<Reservations> {
     }
   }
 
-  void deleteEventDialog(String id){
-    showDialog(context: context, builder: (BuildContext context){
-      return Directionality(
-        textDirection: ui.TextDirection.rtl,
-        child: AlertDialog(
-          title: const Text('مسح الحجز'),
-          content: const Text('متأكد انك عايز تمسح الحجز؟'),
-          actions: <Widget>[
-            TextButton(onPressed: () => _deleteEvent(id), child: const Text('اه')),
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('لا')),
-          ],
-        ),
-      );
-    });
+  void deleteEventDialog(String id) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Directionality(
+            textDirection: ui.TextDirection.rtl,
+            child: AlertDialog(
+              title: const Text('مسح الحجز'),
+              content: const Text('متأكد انك عايز تمسح الحجز؟'),
+              actions: <Widget>[
+                TextButton(
+                    onPressed: () => {Navigator.pop(context), _deleteEvent(id)},
+                    child: const Text('اه')),
+                TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('لا')),
+              ],
+            ),
+          );
+        });
   }
 
-  Future<void> _deleteEvent(String id) async{
+  Future<void> _deleteEvent(String id) async {
     final response = await http.delete(
-      Uri.parse(
-          'https://churchapp-tstf.onrender.com/reservation/$id'),
+      Uri.parse('https://churchapp-tstf.onrender.com/reservation/$id'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': userToken!
       },
     );
-    if(response.statusCode == 200){
-      getEventsAPI(kFirstDay, kLastDay);
+    if (response.statusCode == 200) {
+      await getEventsAPI(kFirstDay, kLastDay);
+      _selectedEvents.value = _getEventsForDay(_selectedDay!);
     }
   }
 
@@ -175,6 +187,11 @@ class _Reservations extends State<Reservations> {
       switch (response.statusCode) {
         case 201:
           {
+            setState(() {
+              _selectedDateController.text = '';
+              _selectedStartTimeController.text = '';
+              _selectedEndTimeController.text = '';
+            });
             showDefaultMessage(
                 'مستني الموافقة',
                 'طلب الحجز اتبعت ومستني الموافقة تقدر تتابع الحجز في صفحة متباعة الحجوزات',
@@ -442,11 +459,11 @@ class _Reservations extends State<Reservations> {
               textDirection: ui.TextDirection.rtl,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            loading
-                ? const Center(
+            if(loading) const Center(
                     child: CircularProgressIndicator(),
                   )
-                : TableCalendar<Event>(
+                  else
+                ...[TableCalendar<Event>(
                     firstDay: kFirstDay,
                     lastDay: kLastDay,
                     focusedDay: _focusedDay,
@@ -515,31 +532,35 @@ class _Reservations extends State<Reservations> {
                                               ),
                                             ],
                                           ),
-                                                                                    Row(
+                                          Row(
                                             children: <Widget>[
                                               const Text('من: '),
                                               Text(
-                                                DateFormat('hh:mm a').format(value[index].startTime),
-                                                textDirection: ui.TextDirection.ltr,
+                                                DateFormat('hh:mm a').format(
+                                                    value[index].startTime),
+                                                textDirection:
+                                                    ui.TextDirection.ltr,
                                                 style: const TextStyle(
                                                     fontWeight:
                                                         ui.FontWeight.bold),
                                               ),
                                             ],
                                           ),
-                                                                                    Row(
+                                          Row(
                                             children: <Widget>[
                                               const Text('الى: '),
                                               Text(
-                                                DateFormat('hh:mm a').format(value[index].endTime),
-                                                textDirection: ui.TextDirection.ltr,
+                                                DateFormat('hh:mm a').format(
+                                                    value[index].endTime),
+                                                textDirection:
+                                                    ui.TextDirection.ltr,
                                                 style: const TextStyle(
                                                     fontWeight:
                                                         ui.FontWeight.bold),
                                               ),
                                             ],
                                           ),
-                                                                                    Row(
+                                          Row(
                                             children: <Widget>[
                                               const Text('الحاجز: '),
                                               Text(
@@ -562,7 +583,9 @@ class _Reservations extends State<Reservations> {
                                   );
                                 });
                           },
-                          onLongPress: role == 'admin'? () => deleteEventDialog(value[index].id) : null,
+                          onLongPress: role == 'admin'
+                              ? () => deleteEventDialog(value[index].id)
+                              : null,
                           title: Text('${value[index]}'),
                         ),
                       );
@@ -570,7 +593,7 @@ class _Reservations extends State<Reservations> {
                   );
                 },
               ),
-            ),
+            ),]
           ])),
       floatingActionButton: FloatingActionButton(
         onPressed: showNewReservationModal,

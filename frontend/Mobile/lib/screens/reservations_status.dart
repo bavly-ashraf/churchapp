@@ -22,7 +22,7 @@ class _Reservations extends State<ReservationsStatus> {
   String? userToken;
   String role = 'user';
   bool loading = false;
-  bool loadingAction = false;
+  String loadingAction = '';
 
   @override
   void initState() {
@@ -76,7 +76,7 @@ class _Reservations extends State<ReservationsStatus> {
   Future<void> changeStatus(String reservationID, String newStatus) async {
     try {
       setState(() {
-        loadingAction = true;
+        loadingAction = reservationID;
       });
       final response = await http.post(
           Uri.parse(
@@ -86,9 +86,9 @@ class _Reservations extends State<ReservationsStatus> {
             'Authorization': userToken!
           },
           body: jsonEncode({"status": newStatus}));
-          setState(() {
-            loadingAction = false;
-          });
+      setState(() {
+        loadingAction = '';
+      });
       switch (response.statusCode) {
         case 200:
           {
@@ -106,7 +106,7 @@ class _Reservations extends State<ReservationsStatus> {
       }
     } catch (e) {
       setState(() {
-        loadingAction = false;
+        loadingAction = '';
       });
       if (e.toString().contains('ClientException')) {
         showDefaultMessage('مفيش نت', 'اتأكد ان النت شغال وجرب تاني');
@@ -240,47 +240,66 @@ class _Reservations extends State<ReservationsStatus> {
                                         Text(
                                           '${DateFormat('hh:mm a').format(DateTime.parse(reservations[index]['startTime']))} - ${DateFormat('hh:mm a').format(DateTime.parse(reservations[index]['endTime']))}',
                                         ),
-                                        if(role == 'admin') ...[
-                                        const SizedBox(
-                                          height: 8,
-                                        ),
-                                        Text(reservations[index]['reserver']
-                                            ['username'])
+                                        if (role == 'admin') ...[
+                                          const SizedBox(
+                                            height: 8,
+                                          ),
+                                          Text(reservations[index]['reserver']
+                                              ['username'])
                                         ]
                                       ],
                                     ),
                                     reservations[index]['status'] ==
                                                 'Pending' &&
                                             role == 'admin'
-                                        ? loadingAction? const Padding(padding: EdgeInsets.fromLTRB(30, 0, 30, 0), child: CircularProgressIndicator()) : Row(
-                                            children: <Widget>[
-                                              IconButton(
-                                                  onPressed: () =>
-                                                      loadingAction? null : showConfirmationMessage(
-                                                          reservations[index]
-                                                              ['_id'],
-                                                          'Approved'),
-                                                  tooltip: 'موافقة',
-                                                  icon: const Icon(
-                                                    Icons
-                                                        .check_circle_outline_outlined,
-                                                    size: 40,
-                                                    color: Colors.green,
-                                                  )),
-                                              IconButton(
-                                                  onPressed: () =>
-                                                      loadingAction? null : showConfirmationMessage(
-                                                          reservations[index]
-                                                              ['_id'],
-                                                          'Rejected'),
-                                                  tooltip: 'رفض',
-                                                  icon: const Icon(
-                                                    Icons.cancel_outlined,
-                                                    size: 40,
-                                                    color: Colors.red,
-                                                  )),
-                                            ],
-                                          )
+                                        ? loadingAction ==
+                                                reservations[index]['_id']
+                                            ? const Padding(
+                                                padding: EdgeInsets.fromLTRB(
+                                                    30, 0, 30, 0),
+                                                child:
+                                                    CircularProgressIndicator())
+                                            : Row(
+                                                children: <Widget>[
+                                                  IconButton(
+                                                      onPressed: () =>
+                                                          loadingAction ==
+                                                                  reservations[
+                                                                          index]
+                                                                      ['_id']
+                                                              ? null
+                                                              : showConfirmationMessage(
+                                                                  reservations[
+                                                                          index]
+                                                                      ['_id'],
+                                                                  'Approved'),
+                                                      tooltip: 'موافقة',
+                                                      icon: const Icon(
+                                                        Icons
+                                                            .check_circle_outline_outlined,
+                                                        size: 40,
+                                                        color: Colors.green,
+                                                      )),
+                                                  IconButton(
+                                                      onPressed: () =>
+                                                          loadingAction ==
+                                                                  reservations[
+                                                                          index]
+                                                                      ['_id']
+                                                              ? null
+                                                              : showConfirmationMessage(
+                                                                  reservations[
+                                                                          index]
+                                                                      ['_id'],
+                                                                  'Rejected'),
+                                                      tooltip: 'رفض',
+                                                      icon: const Icon(
+                                                        Icons.cancel_outlined,
+                                                        size: 40,
+                                                        color: Colors.red,
+                                                      )),
+                                                ],
+                                              )
                                         : reservations[index]['status'] ==
                                                     'Pending' &&
                                                 role == 'user'

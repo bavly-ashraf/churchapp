@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:church/screens/announcements.dart';
 import 'package:church/screens/halls.dart';
+import 'package:church/screens/login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -333,8 +334,9 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
                     TextButton(
                         onPressed: () {
                           Navigator.pop(context);
-                          Navigator.pushNamedAndRemoveUntil(
-                              context, '/', (route) => false);
+                          // Navigator.pushNamedAndRemoveUntil(
+                          //     context, '/', (route) => false);
+                          Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context) => const LoginPage()), (route)=> false);
                           //don't forget to remove token from shared preferences
                           removeToken();
                         },

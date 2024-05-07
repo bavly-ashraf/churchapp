@@ -11,7 +11,7 @@ require('dotenv').config();
 const signup = async (req,res,next)=>{
     // const {usename, email, password, mobile, profilepic, bio} = req.body;
     const { code } = req.body;
-    const Church = await ChurchCode.find({code});
+    const Church = await ChurchCode.findOne({code});
     if(!Church) return next(new AppError('Unauthorized',403));
     let imgUrl;
     if(req.file){
