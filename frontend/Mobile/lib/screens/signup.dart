@@ -19,6 +19,7 @@ class _SignupPageState extends State<SignupPage> {
   String? _email;
   String? _mobile;
   String? _pass;
+  String? _churchCode;
   bool loading = false;
   // String? _churchCode;
 
@@ -65,6 +66,7 @@ class _SignupPageState extends State<SignupPage> {
           'email': _email!,
           'password': _pass!,
           'mobile': _mobile!,
+          'code': _churchCode!
         }),
       );
       if (response.statusCode == 201) {
@@ -90,6 +92,23 @@ class _SignupPageState extends State<SignupPage> {
                 );
               });
         }
+      } else if(response.statusCode == 403){
+                  if (mounted) {
+            showDialog(
+                context: context,
+                builder: (context) => Directionality(
+                      textDirection: TextDirection.rtl,
+                      child: AlertDialog(
+                        title: const Text('كود الكنيسة'),
+                        content: const Text('كود الكنيسة غلط'),
+                        actions: <Widget>[
+                          TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('تمام'))
+                        ],
+                      ),
+                    ));
+          }
       } else {
         final decodedResponse = jsonDecode(response.body);
         if (decodedResponse.containsKey('message') &&
@@ -241,17 +260,17 @@ class _SignupPageState extends State<SignupPage> {
                             decoration:
                                 const InputDecoration(labelText: 'كلمة السر'),
                           ),
-                          // TextFormField(
-                          //   validator: (value) {
-                          //     if (value != null && value.isNotEmpty) {
-                          //       return null;
-                          //     }
-                          //     return 'اكتب كود الكنيسة';
-                          //   },
-                          //   onSaved: (newValue) => _churchCode = newValue,
-                          //   decoration:
-                          //       const InputDecoration(labelText: 'كود الكنيسة'),
-                          // ),
+                          TextFormField(
+                            validator: (value) {
+                              if (value != null && value.isNotEmpty) {
+                                return null;
+                              }
+                              return 'اكتب كود الكنيسة';
+                            },
+                            onSaved: (newValue) => _churchCode = newValue,
+                            decoration:
+                                const InputDecoration(labelText: 'كود الكنيسة'),
+                          ),
                           const SizedBox(height: 30),
                           ElevatedButton(
                               onPressed: loading? null: _createNewAccount,

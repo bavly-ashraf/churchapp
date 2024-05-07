@@ -3,12 +3,16 @@ const bcrypt = require("bcrypt");
 const AppError = require('../Utils/AppError');
 const jwt = require('jsonwebtoken');
 const cloudinary = require('../Utils/cloudinary');
+const ChurchCode = require("../Models/ChurchCodes");
 require('dotenv').config();
 
 
 
-const signup = async (req,res)=>{
+const signup = async (req,res,next)=>{
     // const {usename, email, password, mobile, profilepic, bio} = req.body;
+    const { code } = req.body;
+    const Church = await ChurchCode.find({code});
+    if(!Church) return next(new AppError('Unauthorized',403));
     let imgUrl;
     if(req.file){
         const { secure_url } = await cloudinary.v2.uploader.upload(req.file.path , {folder: 'profilePics'});
