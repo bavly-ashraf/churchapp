@@ -145,7 +145,7 @@ class _SignupPageState extends State<SignupPage> {
                       textDirection: TextDirection.rtl,
                       child: AlertDialog(
                         title: const Text('حصل مشكلة'),
-                        content: const Text('حصل مشكلة في السيرفر'),
+                        content: Text(response.statusCode == 400? 'اتأكد ان البيانات صح واليوزر والباسورد من 3 ل 30 حرف او رقم' : 'حصل مشكلة في السيرفر'),
                         actions: <Widget>[
                           TextButton(
                               onPressed: () => Navigator.pop(context),

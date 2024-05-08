@@ -3,11 +3,12 @@ import 'package:church/screens/reservations.dart';
 import 'package:flutter/material.dart';
 
 class Hall extends StatelessWidget {
-  const Hall({super.key, required this.hallID , required this.hallName, required this.getAllHalls, required this.userToken});
+  const Hall({super.key, required this.hallID , required this.hallName, required this.getAllHalls, required this.userToken, required this.role});
 
   final String hallID;
   final String hallName;
   final String userToken;
+  final String role;
   final Function getAllHalls;
 
   @override
@@ -95,7 +96,7 @@ class Hall extends StatelessWidget {
 
     return GestureDetector(
       onTap: openHallReservation,
-      onLongPress: deleteHallDialog,
+      onLongPress: role == 'admin'? deleteHallDialog : null,
       child: (Card(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),

@@ -245,12 +245,13 @@ class _Reservations extends State<Reservations> {
   Future<void> showNewReservationModal() {
     return showModalBottomSheet(
         context: context,
+        isScrollControlled: true,
         builder: (BuildContext context) {
           return Padding(
             padding: const EdgeInsets.all(20.0)
                 .copyWith(bottom: MediaQuery.of(context).viewInsets.bottom),
             child: SizedBox(
-              height: 600,
+              height: MediaQuery.of(context).size.height * 0.85,
               child: Center(
                 child: createNewReservation(),
               ),
@@ -450,151 +451,157 @@ class _Reservations extends State<Reservations> {
           const SizedBox(width: 10),
         ],
       ),
-      body: Container(
-          alignment: Alignment.center,
-          margin: const EdgeInsets.all(10),
-          child: Column(children: [
-            Text(
-              'مواعيد الحجز في ${widget.hallName} (${_calendarFormat.name == 'month' ? 'الشهر' : _calendarFormat.name == 'week' ? 'الاسبوع' : 'النص شهر'} دة)',
-              textDirection: ui.TextDirection.rtl,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            if(loading) const Center(
-                    child: CircularProgressIndicator(),
-                  )
-                  else
-                ...[TableCalendar<Event>(
-                    firstDay: kFirstDay,
-                    lastDay: kLastDay,
-                    focusedDay: _focusedDay,
-                    selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-                    calendarFormat: _calendarFormat,
-                    eventLoader: _getEventsForDay,
-                    startingDayOfWeek: StartingDayOfWeek.saturday,
-                    calendarStyle: const CalendarStyle(
-                      // Use `CalendarStyle` to customize the UI
-                      outsideDaysVisible: false,
+      body: RefreshIndicator(
+        onRefresh: () async{
+          await getEventsAPI(kFirstDay, kLastDay);
+          _selectedEvents.value = _getEventsForDay(_selectedDay!);
+        },
+        child: Container(
+            alignment: Alignment.center,
+            margin: const EdgeInsets.all(10),
+            child: Column(children: [
+              Text(
+                'مواعيد الحجز في ${widget.hallName} (${_calendarFormat.name == 'month' ? 'الشهر' : _calendarFormat.name == 'week' ? 'الاسبوع' : 'النص شهر'} دة)',
+                textDirection: ui.TextDirection.rtl,
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              if(loading) const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                    else
+                  ...[TableCalendar<Event>(
+                      firstDay: kFirstDay,
+                      lastDay: kLastDay,
+                      focusedDay: _focusedDay,
+                      selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                      calendarFormat: _calendarFormat,
+                      eventLoader: _getEventsForDay,
+                      startingDayOfWeek: StartingDayOfWeek.saturday,
+                      calendarStyle: const CalendarStyle(
+                        // Use `CalendarStyle` to customize the UI
+                        outsideDaysVisible: false,
+                      ),
+                      onDaySelected: _onDaySelected,
+                      onFormatChanged: (format) {
+                        if (_calendarFormat != format) {
+                          setState(() {
+                            _calendarFormat = format;
+                          });
+                        }
+                      },
+                      onPageChanged: (focusedDay) {
+                        _focusedDay = focusedDay;
+                      },
                     ),
-                    onDaySelected: _onDaySelected,
-                    onFormatChanged: (format) {
-                      if (_calendarFormat != format) {
-                        setState(() {
-                          _calendarFormat = format;
-                        });
-                      }
-                    },
-                    onPageChanged: (focusedDay) {
-                      _focusedDay = focusedDay;
-                    },
-                  ),
-            const SizedBox(height: 8.0),
-            Expanded(
-              child: ValueListenableBuilder<List<Event>>(
-                valueListenable: _selectedEvents,
-                builder: (context, value, _) {
-                  return ListView.builder(
-                    itemCount: value.length,
-                    itemBuilder: (context, index) {
-                      return Container(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 12.0,
-                          vertical: 4.0,
-                        ),
-                        decoration: BoxDecoration(
-                          border: Border.all(),
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                        child: ListTile(
-                          onTap: () {
-                            showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return Directionality(
-                                    textDirection: ui.TextDirection.rtl,
-                                    child: AlertDialog(
-                                      title: const Text(
-                                        'تفاصيل الحجز',
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      content: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          Row(
-                                            children: <Widget>[
-                                              const Text('سبب الحجز: '),
-                                              Text(
-                                                value[index].title,
-                                                style: const TextStyle(
-                                                    fontWeight:
-                                                        ui.FontWeight.bold),
-                                              ),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: <Widget>[
-                                              const Text('من: '),
-                                              Text(
-                                                DateFormat('hh:mm a').format(
-                                                    value[index].startTime),
-                                                textDirection:
-                                                    ui.TextDirection.ltr,
-                                                style: const TextStyle(
-                                                    fontWeight:
-                                                        ui.FontWeight.bold),
-                                              ),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: <Widget>[
-                                              const Text('الى: '),
-                                              Text(
-                                                DateFormat('hh:mm a').format(
-                                                    value[index].endTime),
-                                                textDirection:
-                                                    ui.TextDirection.ltr,
-                                                style: const TextStyle(
-                                                    fontWeight:
-                                                        ui.FontWeight.bold),
-                                              ),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: <Widget>[
-                                              const Text('الحاجز: '),
-                                              Text(
-                                                value[index].reserver,
-                                                style: const TextStyle(
-                                                    fontWeight:
-                                                        ui.FontWeight.bold),
-                                              ),
-                                            ],
-                                          ),
+              const SizedBox(height: 8.0),
+              Expanded(
+                child: ValueListenableBuilder<List<Event>>(
+                  valueListenable: _selectedEvents,
+                  builder: (context, value, _) {
+                    return ListView.builder(
+                      itemCount: value.length,
+                      itemBuilder: (context, index) {
+                        return Container(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 12.0,
+                            vertical: 4.0,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border.all(),
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          child: ListTile(
+                            onTap: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return Directionality(
+                                      textDirection: ui.TextDirection.rtl,
+                                      child: AlertDialog(
+                                        title: const Text(
+                                          'تفاصيل الحجز',
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        content: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            Row(
+                                              children: <Widget>[
+                                                const Text('سبب الحجز: '),
+                                                Text(
+                                                  value[index].title,
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          ui.FontWeight.bold),
+                                                ),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: <Widget>[
+                                                const Text('من: '),
+                                                Text(
+                                                  DateFormat('hh:mm a').format(
+                                                      value[index].startTime),
+                                                  textDirection:
+                                                      ui.TextDirection.ltr,
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          ui.FontWeight.bold),
+                                                ),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: <Widget>[
+                                                const Text('الى: '),
+                                                Text(
+                                                  DateFormat('hh:mm a').format(
+                                                      value[index].endTime),
+                                                  textDirection:
+                                                      ui.TextDirection.ltr,
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          ui.FontWeight.bold),
+                                                ),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: <Widget>[
+                                                const Text('الحاجز: '),
+                                                Text(
+                                                  value[index].reserver,
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          ui.FontWeight.bold),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                        actions: <Widget>[
+                                          TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context),
+                                              child: const Text('تمام'))
                                         ],
                                       ),
-                                      actions: <Widget>[
-                                        TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context),
-                                            child: const Text('تمام'))
-                                      ],
-                                    ),
-                                  );
-                                });
-                          },
-                          onLongPress: role == 'admin'
-                              ? () => deleteEventDialog(value[index].id)
-                              : null,
-                          title: Text('${value[index]}'),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-            ),]
-          ])),
+                                    );
+                                  });
+                            },
+                            onLongPress: role == 'admin'
+                                ? () => deleteEventDialog(value[index].id)
+                                : null,
+                            title: Text('${value[index]}'),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),]
+            ])),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: showNewReservationModal,
         tooltip: 'حجز ميعاد جديد',

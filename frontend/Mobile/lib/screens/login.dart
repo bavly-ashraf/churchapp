@@ -75,7 +75,7 @@ class _LoginPageState extends State<LoginPage> {
           await prefs.setString('userData',jsonEncode(decodedResponse['user']));
           _goToHompage();
         }
-      } else if(response.statusCode == 404){
+      } else if(response.statusCode == 404 || response.statusCode == 400){
         setState(() {
           loading = false;
         });
