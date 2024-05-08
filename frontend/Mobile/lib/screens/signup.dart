@@ -28,26 +28,6 @@ class _SignupPageState extends State<SignupPage> {
     if (form != null && form.validate()) {
       form.save();
       signUp();
-      // showDialog(
-      //     context: context,
-      //     builder: (context) {
-      //       return AlertDialog(
-      //         title: const Text(
-      //           'تمام عدي',
-      //           textDirection: TextDirection.rtl,
-      //         ),
-      //         content: Text(
-      //           'اسم المستخدم: $_userName و كلمة السر: $_pass والموبايل: $_mobile والايميل: $_email',
-      //           textDirection: TextDirection.rtl,
-      //         ),
-      //         actions: <Widget>[
-      //           TextButton(
-      //               onPressed: () => Navigator.pop(context),
-      //               child: const Text('ارجع')),
-      //           TextButton(onPressed: _goToHompage, child: const Text('كمل')),
-      //         ],
-      //       );
-      //     });
     }
   }
 

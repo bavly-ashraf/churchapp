@@ -26,26 +26,6 @@ class _LoginPageState extends State<LoginPage> {
     if (form != null && form.validate()) {
       form.save();
       login();
-      // showDialog(
-      //     context: context,
-      //     builder: (context) {
-      //       return AlertDialog(
-      //         title: const Text(
-      //           'تمام عدي',
-      //           textDirection: TextDirection.rtl,
-      //         ),
-      //         content: Text(
-      //           'اسم المستخدم: $_userName و كلمة السر: $_pass',
-      //           textDirection: TextDirection.rtl,
-      //         ),
-      //         actions: <Widget>[
-      //           TextButton(
-      //               onPressed: () => Navigator.pop(context),
-      //               child: const Text('ارجع')),
-      //           TextButton(onPressed: _goToHompage, child: const Text('كمل')),
-      //         ],
-      //       );
-      //     });
     }
   }
 
@@ -149,9 +129,6 @@ class _LoginPageState extends State<LoginPage> {
                           TextFormField(
                             validator: (value) {
                               if (value != null && value.isNotEmpty) {
-                                // if (!value.contains('.')) {
-                                //   return 'اكتب اسم المستخدم صح';
-                                // }
                                 return null;
                               }
                               return 'اكتب اسم المستخدم';

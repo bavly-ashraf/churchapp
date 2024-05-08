@@ -180,7 +180,6 @@ class _Reservations extends State<ReservationsStatus> {
 
   @override
   Widget build(BuildContext context) {
-    //Don't forget loading && sort && approve, reject
     return Scaffold(
         appBar: AppBar(
           centerTitle: true,

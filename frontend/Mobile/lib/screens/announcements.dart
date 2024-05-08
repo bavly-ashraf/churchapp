@@ -21,7 +21,6 @@ class AnnouncementsState extends State<Announcements> {
   bool loading = false;
   int nextPageTrigger = 3;
   List<dynamic> posts = [];
-  // final List<String> attachments = ['assets/images/church_logo.png'];
 
   @override
   void initState() {
@@ -142,7 +141,6 @@ class AnnouncementsState extends State<Announcements> {
                         body: posts[index],
                         index: index,
                         getAllAnnouncements: getAllAnnouncements,
-                        // attachments: attachments,
                       ));
                 }),
       ),

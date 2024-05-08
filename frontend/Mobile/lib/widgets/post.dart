@@ -104,23 +104,6 @@ class _PostState extends State<Post> {
     }
   }
 
-  // void getReactsData(List<dynamic>? reacts, String? selectedReact) {
-  //   setState(() {
-  //     if (reacts != null && reacts.isNotEmpty) {
-  //       allReacts = reacts;
-  //       var userReact = widget.body['postReacts'].firstWhere(
-  //           (el) => el['creator']['_id'] == userId,
-  //           orElse: () => null);
-  //       if (userReact != null) {
-  //         react = userReact['react'];
-  //       }
-  //     }
-  //     if(selectedReact != null && selectedReact.isNotEmpty){
-  //       react = selectedReact;
-  //     }
-  //   });
-  // }
-
   Future<void> _deletePostDialog() async {
     showDialog(
         context: context,
@@ -204,13 +187,11 @@ class _PostState extends State<Post> {
           },
           body: jsonEncode(<String, String>{'react': react!}));
       if (response.statusCode == 201) {
-        // widget.getAllAnnouncements();
         getPostReacts();
       } else if (response.statusCode == 200) {
         setState(() {
           react = null;
         });
-        // widget.getAllAnnouncements();
         getPostReacts();
       } else {
         if (mounted) {
@@ -353,10 +334,6 @@ class _PostState extends State<Post> {
                         width: 10,
                       ),
                       const CircleAvatar(
-                        // backgroundImage: widget.attachments != null &&
-                        //         widget.attachments!.isNotEmpty
-                        //     ? AssetImage(widget.attachments![0])
-                        //     : const AssetImage('assets/images/church_logo.png'),
                         backgroundImage:
                             AssetImage('assets/images/church_logo.png'),
                       ),
@@ -378,8 +355,6 @@ class _PostState extends State<Post> {
                   ),
                 ],
               ),
-              // visible only to post creator
-              // (userData["_id"] == widget.body["creator"])?
               if (userId == postUserId)
                 IconButton(
                     onPressed: _deletePostDialog,
@@ -397,20 +372,6 @@ class _PostState extends State<Post> {
               ),
             ),
           ),
-          // widget.attachments != null && widget.attachments!.isNotEmpty
-          //     ? Padding(
-          //         padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-          //         child: Row(
-          //             textDirection: TextDirection.rtl,
-          //             mainAxisAlignment: MainAxisAlignment.center,
-          //             children: <Widget>[
-          //               Image.asset(
-          //                 widget.attachments![0],
-          //                 width: 100,
-          //               ),
-          //             ]),
-          //       )
-          //     : Container(),
           const Divider(
             indent: 10,
             endIndent: 10,

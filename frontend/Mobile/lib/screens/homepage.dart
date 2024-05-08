@@ -334,10 +334,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
                     TextButton(
                         onPressed: () {
                           Navigator.pop(context);
-                          // Navigator.pushNamedAndRemoveUntil(
-                          //     context, '/', (route) => false);
                           Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context) => const LoginPage()), (route)=> false);
-                          //don't forget to remove token from shared preferences
                           removeToken();
                         },
                         child: const Text('اه')),
@@ -354,9 +351,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
         onPopInvoked: (didPop) => onExit(didPop, context),
         child: Scaffold(
             appBar: AppBar(
-              // title: Text('ازيك ${userName == null? '':'يا $userName'}'),
               title: Text(userName),
-              // title: const Text('ازيك يا يوزر'),
               centerTitle: true,
               automaticallyImplyLeading: false,
               actions: <Widget>[
