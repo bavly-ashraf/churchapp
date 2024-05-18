@@ -6,6 +6,14 @@ const HallSchema = new Schema({
         required: true,
         unique: true,
     },
+    floor: {
+        type: String,
+        required: true,
+    },
+    building: {
+        type: String,
+        required: true,
+    }
 });
 
 const Hall = mongoose.model('Hall', HallSchema);

@@ -26,7 +26,9 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
       GlobalKey<AnnouncementsState>();
   final GlobalKey<HallsState> _hallKey = GlobalKey<HallsState>();
   String? _newAnnounce;
-  String? _newHall;
+  String? _newHallName;
+  String _newHallFloor = 'الدور الأرضي';
+  String _newHallBuilding = 'مبنى الخدمات الرئيسي';
 
   //sharedPref variables
   dynamic userData;
@@ -36,6 +38,10 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
 
   // check user role (user || admin)
   bool showFab = false;
+
+  // loading variables for disabling when post
+  bool loadingPost = false;
+  bool loadingHall = false;
 
   @override
   void initState() {
@@ -94,8 +100,12 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
               builder: (context) => Directionality(
                     textDirection: TextDirection.rtl,
                     child: AlertDialog(
-                    title: Text(e.toString().contains('ClientException')?'مفيش نت':'حصل مشكلة'),
-                    content: Text(e.toString().contains('ClientException')? 'اتأكد ان النت شغال وجرب تاني':'حصل مشكلة في السيرفر'),
+                      title: Text(e.toString().contains('ClientException')
+                          ? 'مفيش نت'
+                          : 'حصل مشكلة'),
+                      content: Text(e.toString().contains('ClientException')
+                          ? 'اتأكد ان النت شغال وجرب تاني'
+                          : 'حصل مشكلة في السيرفر'),
                       actions: <Widget>[
                         TextButton(
                             onPressed: () => Navigator.pop(context),
@@ -119,7 +129,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
               'Content-Type': 'application/json; charset=UTF-8',
               'Authorization': userToken!
             },
-            body: jsonEncode(<String, String>{'name': _newHall!}));
+            body: jsonEncode(<String, String>{'name': _newHallName!, 'floor': _newHallFloor, 'building': _newHallBuilding}));
         if (response.statusCode == 201 && mounted) {
           Navigator.pop(context);
           _hallKey.currentState?.getAllHalls();
@@ -148,8 +158,12 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
               builder: (context) => Directionality(
                     textDirection: TextDirection.rtl,
                     child: AlertDialog(
-                    title: Text(e.toString().contains('ClientException')?'مفيش نت':'حصل مشكلة'),
-                    content: Text(e.toString().contains('ClientException')? 'اتأكد ان النت شغال وجرب تاني':'حصل مشكلة في السيرفر'),
+                      title: Text(e.toString().contains('ClientException')
+                          ? 'مفيش نت'
+                          : 'حصل مشكلة'),
+                      content: Text(e.toString().contains('ClientException')
+                          ? 'اتأكد ان النت شغال وجرب تاني'
+                          : 'حصل مشكلة في السيرفر'),
                       actions: <Widget>[
                         TextButton(
                             onPressed: () => Navigator.pop(context),
@@ -187,7 +201,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
                 padding: const EdgeInsets.all(20.0)
                     .copyWith(bottom: MediaQuery.of(context).viewInsets.bottom),
                 child: SizedBox(
-                  height: 200,
+                  height: 300,
                   child: Center(
                     child: createNewHall(),
                   ),
@@ -199,95 +213,171 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
   }
 
   Widget createNewAnnouncement() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          children: <Widget>[
-            Text(
-              'تنبيه جديد',
-              style: TextStyle(
-                  fontSize: 25, color: Theme.of(context).primaryColor),
+    return StatefulBuilder(
+      builder: (BuildContext context, StateSetter setModalState) {
+        return SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              children: <Widget>[
+                Text(
+                  'تنبيه جديد',
+                  style: TextStyle(
+                      fontSize: 25, color: Theme.of(context).primaryColor),
+                ),
+                Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Directionality(
+                        textDirection: TextDirection.rtl,
+                        child: Form(
+                          key: _newAnnounceFormKey,
+                          child: Column(
+                            children: <Widget>[
+                              TextFormField(
+                                validator: (value) {
+                                  if (value != '') {
+                                    return null;
+                                  }
+                                  return 'من فضلك اكتب تنبيه';
+                                },
+                                onSaved: (newAnnounce) =>
+                                    _newAnnounce = newAnnounce,
+                                decoration: const InputDecoration(
+                                  hintText: 'اكتب تنبيه جديد',
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              ElevatedButton(
+                                  onPressed:
+                                      loadingPost == true ? null : (){
+                                        setModalState((){
+                                          loadingPost = true;
+                                        });
+                                        _uploadPost().then((value) => setModalState((){
+                                          loadingPost = false;
+                                        }));
+                                      },
+                                  child: loadingPost == true
+                                      ? const Padding(
+                                          padding: EdgeInsets.all(8),
+                                          child: CircularProgressIndicator())
+                                      : const Text('نشر التنبيه'))
+                            ],
+                          ),
+                        ))),
+              ],
             ),
-            Padding(
-                padding: const EdgeInsets.all(10),
-                child: Directionality(
-                    textDirection: TextDirection.rtl,
-                    child: Form(
-                      key: _newAnnounceFormKey,
-                      child: Column(
-                        children: <Widget>[
-                          TextFormField(
-                            validator: (value) {
-                              if (value != '') {
-                                return null;
-                              }
-                              return 'من فضلك اكتب تنبيه';
-                            },
-                            onSaved: (newAnnounce) =>
-                                _newAnnounce = newAnnounce,
-                            decoration: const InputDecoration(
-                              hintText: 'اكتب تنبيه جديد',
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          ElevatedButton(
-                              onPressed: _uploadPost,
-                              child: const Text('نشر التنبيه'))
-                        ],
-                      ),
-                    ))),
-          ],
-        ),
-      ),
+          ),
+        );
+      }
     );
   }
 
   Widget createNewHall() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          children: <Widget>[
-            Text(
-              'قاعة جديد',
-              style: TextStyle(
-                  fontSize: 25, color: Theme.of(context).primaryColor),
-            ),
-            Padding(
-                padding: const EdgeInsets.all(10),
-                child: Directionality(
-                    textDirection: TextDirection.rtl,
-                    child: Form(
-                      key: _newHallFormKey,
-                      child: Column(
-                        children: <Widget>[
-                          TextFormField(
-                            validator: (value) {
-                              if (value != '') {
-                                return null;
-                              }
-                              return 'من فضلك اكتب اسم القاعة';
-                            },
-                            onSaved: (newHall) => _newHall = newHall,
-                            decoration: const InputDecoration(
-                              hintText: 'اكتب اسم القاعة',
+    return StatefulBuilder(
+      builder: (BuildContext context, StateSetter setModalState){
+      return SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            children: <Widget>[
+              Text(
+                'قاعة جديد',
+                style: TextStyle(
+                    fontSize: 25, color: Theme.of(context).primaryColor),
+              ),
+              Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Directionality(
+                      textDirection: TextDirection.rtl,
+                      child: Form(
+                        key: _newHallFormKey,
+                        child: Column(
+                          children: <Widget>[
+                            TextFormField(
+                              validator: (value) {
+                                if (value != '') {
+                                  return null;
+                                }
+                                return 'من فضلك اكتب اسم القاعة';
+                              },
+                              onSaved: (newHall) => _newHallName = newHall,
+                              decoration: const InputDecoration(
+                                hintText: 'اكتب اسم القاعة',
+                              ),
                             ),
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          ElevatedButton(
-                              onPressed: _uploadHall,
-                              child: const Text('اضافة القاعة'))
-                        ],
-                      ),
-                    ))),
-          ],
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            SegmentedButton<String>(
+                              segments: const <ButtonSegment<String>>[
+                                ButtonSegment<String>(
+                                    value: 'الدور الأرضي',
+                                    label: Text('الدور الأرضي')),
+                                ButtonSegment<String>(
+                                    value: 'الدور الأول',
+                                    label: Text('الدور الأول')),
+                                ButtonSegment<String>(
+                                    value: 'الدور التاني',
+                                    label: Text('الدور التاني')),
+                                ButtonSegment<String>(
+                                    value: 'الدور التالت',
+                                    label: Text('الدور التالت'))
+                              ],
+                              selected: <String>{_newHallFloor},
+                              onSelectionChanged: (Set<String> newSelection) {
+                                setModalState(() {
+                                  _newHallFloor = newSelection.first;
+                                });
+                              },
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            SegmentedButton<String>(
+                              segments: const <ButtonSegment<String>>[
+                                ButtonSegment<String>(
+                                    value: 'مبنى الخدمات الرئيسي',
+                                    label: Text('مبنى الخدمات الرئيسي')),
+                                ButtonSegment<String>(
+                                    value: 'مبنى الخدمات الصغير',
+                                    label: Text('مبنى الخدمات الصغير')),
+                              ],
+                              selected: <String>{_newHallBuilding},
+                              onSelectionChanged: (Set<String> newSelection) {
+                                setModalState(() {
+                                  _newHallBuilding = newSelection.first;
+                                });
+                              },
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            ElevatedButton(
+                                onPressed:
+                                    loadingHall == true ? null : (){
+                                      setModalState((){
+                                        loadingHall = true;
+                                      });
+                                      _uploadHall().then((value) => setModalState((){
+                                        loadingHall = false;
+                                      }));
+                                    },
+                                child: loadingHall == true
+                                    ? const Padding(
+                                        padding: EdgeInsets.all(8),
+                                        child: CircularProgressIndicator())
+                                    : const Text('اضافة القاعة'))
+                          ],
+                        ),
+                      ))),
+            ],
+          ),
         ),
-      ),
+      );
+      }
     );
   }
 
@@ -334,7 +424,11 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
                     TextButton(
                         onPressed: () {
                           Navigator.pop(context);
-                          Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context) => const LoginPage()), (route)=> false);
+                          Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const LoginPage()),
+                              (route) => false);
                           removeToken();
                         },
                         child: const Text('اه')),

@@ -38,13 +38,13 @@ class _Reservations extends State<Reservations> {
   String role = 'user';
   List<dynamic> initialEventList = [];
   bool loading = false;
+  bool loadingAction = false;
 
   @override
   void initState() {
     super.initState();
     getUserData();
     _selectedDay = _focusedDay;
-    // _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
     _selectedEvents = ValueNotifier([]);
   }
 
@@ -157,7 +157,7 @@ class _Reservations extends State<Reservations> {
             'الميعاد غلط', 'من فضلك اتأكد ان التاريخ والميعاد مكتوبين صح');
       } else {
         form.save();
-        _createNewReservation();
+        await _createNewReservation();
       }
     }
   }
@@ -191,6 +191,9 @@ class _Reservations extends State<Reservations> {
               _selectedDateController.text = '';
               _selectedStartTimeController.text = '';
               _selectedEndTimeController.text = '';
+              _selectedDate = null;
+              _selectedStartTime = null;
+              _selectedEndTime = null;
             });
             showDefaultMessage(
                 'مستني الموافقة',
@@ -251,7 +254,7 @@ class _Reservations extends State<Reservations> {
             padding: const EdgeInsets.all(20.0)
                 .copyWith(bottom: MediaQuery.of(context).viewInsets.bottom),
             child: SizedBox(
-              height: MediaQuery.of(context).size.height * 0.85,
+              height: MediaQuery.of(context).size.height * 0.6,
               child: Center(
                 child: createNewReservation(),
               ),
@@ -310,121 +313,132 @@ class _Reservations extends State<Reservations> {
   }
 
   Widget createNewReservation() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          children: <Widget>[
-            Text(
-              'حجز جديد',
-              style: TextStyle(
-                  fontSize: 25, color: Theme.of(context).primaryColor),
+    return StatefulBuilder(
+      builder: (BuildContext context, StateSetter setModalState) {
+        return SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              children: <Widget>[
+                Text(
+                  'حجز جديد',
+                  style: TextStyle(
+                      fontSize: 25, color: Theme.of(context).primaryColor),
+                ),
+                Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Directionality(
+                        textDirection: ui.TextDirection.rtl,
+                        child: Form(
+                          key: _newReservationFormKey,
+                          child: Column(
+                            children: <Widget>[
+                              TextFormField(
+                                validator: (value) {
+                                  if (value != '') {
+                                    return null;
+                                  }
+                                  return 'من فضلك اكتب سبب الحجز';
+                                },
+                                onSaved: (newReservationReason) =>
+                                    _newReservationReason = newReservationReason,
+                                decoration: const InputDecoration(
+                                  hintText: 'اكتب سبب الحجز',
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  _selectDate(context);
+                                },
+                                child: AbsorbPointer(
+                                  child: TextFormField(
+                                      textDirection: ui.TextDirection.ltr,
+                                      textAlign: TextAlign.end,
+                                      decoration: const InputDecoration(
+                                        labelText: 'اختار اليوم',
+                                        suffixIcon: Icon(Icons.calendar_today),
+                                      ),
+                                      validator: (value) {
+                                        if (value != '') {
+                                          return null;
+                                        }
+                                        return 'من فضلك اختار اليوم';
+                                      },
+                                      controller: _selectedDateController),
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  _selectTime(context, 'start');
+                                },
+                                child: AbsorbPointer(
+                                  child: TextFormField(
+                                      textDirection: ui.TextDirection.ltr,
+                                      textAlign: TextAlign.end,
+                                      decoration: const InputDecoration(
+                                        labelText: 'اختار وقت البداية',
+                                        suffixIcon: Icon(Icons.timer_outlined),
+                                      ),
+                                      validator: (value) {
+                                        if (value != '') {
+                                          return null;
+                                        }
+                                        return 'من فضلك اختار وقت البداية';
+                                      },
+                                      controller: _selectedStartTimeController),
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  _selectTime(context, 'end');
+                                },
+                                child: AbsorbPointer(
+                                  child: TextFormField(
+                                      textDirection: ui.TextDirection.ltr,
+                                      textAlign: TextAlign.end,
+                                      decoration: const InputDecoration(
+                                        labelText: 'اختار وقت النهاية',
+                                        suffixIcon: Icon(Icons.timer_outlined),
+                                      ),
+                                      validator: (value) {
+                                        if (value != '') {
+                                          return null;
+                                        }
+                                        return 'من فضلك اختار وقت النهاية';
+                                      },
+                                      controller: _selectedEndTimeController),
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              ElevatedButton(
+                                  onPressed: loadingAction == true? null : (){
+                                    setModalState((){
+                                      loadingAction = true;
+                                    });
+                                    _reserve().then((value) => setModalState((){
+                                      loadingAction = false;
+                                    }));
+                                  },
+                                  child: loadingAction == true? const Padding(padding: EdgeInsets.all(8) ,child: CircularProgressIndicator()) :  const Text('حجز القاعة'))
+                            ],
+                          ),
+                        ))),
+              ],
             ),
-            Padding(
-                padding: const EdgeInsets.all(10),
-                child: Directionality(
-                    textDirection: ui.TextDirection.rtl,
-                    child: Form(
-                      key: _newReservationFormKey,
-                      child: Column(
-                        children: <Widget>[
-                          TextFormField(
-                            validator: (value) {
-                              if (value != '') {
-                                return null;
-                              }
-                              return 'من فضلك اكتب سبب الحجز';
-                            },
-                            onSaved: (newReservationReason) =>
-                                _newReservationReason = newReservationReason,
-                            decoration: const InputDecoration(
-                              hintText: 'اكتب سبب الحجز',
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              _selectDate(context);
-                            },
-                            child: AbsorbPointer(
-                              child: TextFormField(
-                                  textDirection: ui.TextDirection.ltr,
-                                  textAlign: TextAlign.end,
-                                  decoration: const InputDecoration(
-                                    labelText: 'اختار اليوم',
-                                    suffixIcon: Icon(Icons.calendar_today),
-                                  ),
-                                  validator: (value) {
-                                    if (value != '') {
-                                      return null;
-                                    }
-                                    return 'من فضلك اختار اليوم';
-                                  },
-                                  controller: _selectedDateController),
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              _selectTime(context, 'start');
-                            },
-                            child: AbsorbPointer(
-                              child: TextFormField(
-                                  textDirection: ui.TextDirection.ltr,
-                                  textAlign: TextAlign.end,
-                                  decoration: const InputDecoration(
-                                    labelText: 'اختار وقت البداية',
-                                    suffixIcon: Icon(Icons.timer_outlined),
-                                  ),
-                                  validator: (value) {
-                                    if (value != '') {
-                                      return null;
-                                    }
-                                    return 'من فضلك اختار وقت البداية';
-                                  },
-                                  controller: _selectedStartTimeController),
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              _selectTime(context, 'end');
-                            },
-                            child: AbsorbPointer(
-                              child: TextFormField(
-                                  textDirection: ui.TextDirection.ltr,
-                                  textAlign: TextAlign.end,
-                                  decoration: const InputDecoration(
-                                    labelText: 'اختار وقت النهاية',
-                                    suffixIcon: Icon(Icons.timer_outlined),
-                                  ),
-                                  validator: (value) {
-                                    if (value != '') {
-                                      return null;
-                                    }
-                                    return 'من فضلك اختار وقت النهاية';
-                                  },
-                                  controller: _selectedEndTimeController),
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          ElevatedButton(
-                              onPressed: _reserve,
-                              child: const Text('حجز القاعة'))
-                        ],
-                      ),
-                    ))),
-          ],
-        ),
-      ),
+          ),
+        );
+      }
     );
   }
 

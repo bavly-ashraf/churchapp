@@ -104,7 +104,7 @@ Future<void> getAllHalls() async {
               GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
               itemCount: hallNames.length,
-              itemBuilder: (context , index)=> Hall(hallID: hallNames[index]['_id'], hallName: hallNames[index]['name'], getAllHalls: getAllHalls,userToken: userToken!, role: userData['role'],)
+              itemBuilder: (context , index)=> Hall(hallID: hallNames[index]['_id'], hallName: hallNames[index]['name'],hallFloor: hallNames[index]['floor'] ?? '',hallBuilding: hallNames[index]['building'] ?? '', getAllHalls: getAllHalls,userToken: userToken!, role: userData['role'],)
               )
             ),
           ),

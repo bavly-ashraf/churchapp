@@ -2,8 +2,8 @@ const Hall = require('../Models/Halls');
 const AppError = require('../Utils/AppError');
 
 const createHall = async (req,res,next) => {
-    const { name } = req.body;
-    const createdHall = await Hall.create({name,creator: req.user.id });
+    const { name, floor , building } = req.body;
+    const createdHall = await Hall.create({name,floor,building,creator: req.user.id });
     res.status(201).json({message:'success',createdHall})
     };
 

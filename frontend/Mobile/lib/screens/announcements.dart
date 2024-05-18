@@ -22,10 +22,19 @@ class AnnouncementsState extends State<Announcements> {
   int nextPageTrigger = 3;
   List<dynamic> posts = [];
 
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_scrollListener);
     getUserData();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> getUserData() async {
@@ -36,18 +45,20 @@ class AnnouncementsState extends State<Announcements> {
   }
 
   Future<void> getAllAnnouncements([bool reloadFirstPage = false]) async {
-    try {
-      if (mounted) {
-        setState(() {
-          loading = true;
-          if (reloadFirstPage == true) {
-            pageNum = 0;
-          }
-        });
+    if (loading || (isLastPage && !reloadFirstPage)) return;
+
+    setState(() {
+      loading = true;
+      if (reloadFirstPage == true) {
+        pageNum = 0;
       }
+    });
+
+    try {
+      if (mounted) {}
       final response = await http.get(
         Uri.parse(
-            'https://churchapp-tstf.onrender.com/post?skip=$pageNum&limit=$numOfPostsPerPage'),
+            'https://churchapp-tstf.onrender.com/post?skip=${pageNum * numOfPostsPerPage}&limit=$numOfPostsPerPage'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': userToken!
@@ -58,8 +69,7 @@ class AnnouncementsState extends State<Announcements> {
         if (mounted) {
           setState(() {
             isLastPage = responseList.length < numOfPostsPerPage;
-            pageNum = pageNum + 1;
-            loading = false;
+            pageNum++;
             if (reloadFirstPage == true) {
               posts = responseList;
             } else {
@@ -69,9 +79,6 @@ class AnnouncementsState extends State<Announcements> {
         }
       } else {
         if (mounted) {
-          setState(() {
-            loading = false;
-          });
           showDialog(
               context: context,
               builder: (context) => Directionality(
@@ -90,16 +97,17 @@ class AnnouncementsState extends State<Announcements> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          loading = false;
-        });
         showDialog(
             context: context,
             builder: (context) => Directionality(
                   textDirection: TextDirection.rtl,
                   child: AlertDialog(
-                    title: Text(e.toString().contains('ClientException')?'مفيش نت':'حصل مشكلة'),
-                    content: Text(e.toString().contains('ClientException')? 'اتأكد ان النت شغال وجرب تاني':'حصل مشكلة في السيرفر'),
+                    title: Text(e.toString().contains('ClientException')
+                        ? 'مفيش نت'
+                        : 'حصل مشكلة'),
+                    content: Text(e.toString().contains('ClientException')
+                        ? 'اتأكد ان النت شغال وجرب تاني'
+                        : 'حصل مشكلة في السيرفر'),
                     actions: <Widget>[
                       TextButton(
                           onPressed: () => Navigator.pop(context),
@@ -108,6 +116,16 @@ class AnnouncementsState extends State<Announcements> {
                   ),
                 ));
       }
+    } finally {
+      setState(() {
+        loading = false;
+      });
+    }
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.extentAfter < 500 && !loading) {
+      getAllAnnouncements();
     }
   }
 
@@ -116,17 +134,14 @@ class AnnouncementsState extends State<Announcements> {
     return (Scaffold(
       body: RefreshIndicator(
         onRefresh: getAllAnnouncements,
-        child: loading == true
+        child: loading == true && pageNum == 0
             ? const Center(
                 child: CircularProgressIndicator(),
               )
             : ListView.builder(
+                controller: _scrollController,
                 itemCount: posts.length + (isLastPage ? 0 : 1),
                 itemBuilder: (context, index) {
-                  if (posts.length >= 10 &&
-                      (index == posts.length - nextPageTrigger)) {
-                    getAllAnnouncements();
-                  }
                   if (index == posts.length) {
                     return const Center(
                       child: Padding(
