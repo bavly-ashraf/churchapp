@@ -6,8 +6,9 @@ class Event {
   final DateTime endTime;
   final String reserver;
   final String id;
+  final String userId;
 
-  const Event(this.title,this.startTime,this.endTime,this.reserver,this.id);
+  const Event(this.title,this.startTime,this.endTime,this.reserver,this.id,this.userId);
 
   @override
   String toString() => title;

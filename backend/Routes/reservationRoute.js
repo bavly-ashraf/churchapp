@@ -13,7 +13,7 @@ router.get('/user/:hallID', verifyUser, getReservationsForUser);
 
 router.get('/calendar/:hallID', verifyUser, getReservationsForCalendar);
 
-router.delete('/:id', verifyAdmin, deleteReservation);
+router.delete('/:id', verifyUser, deleteReservation);
 
 
 module.exports = router;

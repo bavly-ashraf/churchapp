@@ -1,4 +1,5 @@
 const Hall = require('../Models/Halls');
+const Reservation = require('../Models/Reservations');
 const AppError = require('../Utils/AppError');
 
 const createHall = async (req,res,next) => {
@@ -15,6 +16,7 @@ const getAllHalls = async (req,res,next)=> {
 const deleteHallById = async (req,res,next)=> {
     const {id} = req.params;
     const deletedHall = await Hall.findByIdAndDelete(id);
+    await Reservation.deleteMany({hall:id});
     res.status(200).json({message: 'success', deletedHall})
 }
 

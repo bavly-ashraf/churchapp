@@ -66,7 +66,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
       form.save();
       try {
         final response = await http.post(
-            Uri.parse('https://churchapp-tstf.onrender.com/post'),
+            Uri.parse('http://localhost:3000/post'),
             headers: <String, String>{
               'Content-Type': 'application/json; charset=UTF-8',
               'Authorization': userToken!
@@ -124,7 +124,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
       form.save();
       try {
         final response = await http.post(
-            Uri.parse('https://churchapp-tstf.onrender.com/hall'),
+            Uri.parse('http://localhost:3000/hall'),
             headers: <String, String>{
               'Content-Type': 'application/json; charset=UTF-8',
               'Authorization': userToken!

@@ -58,7 +58,7 @@ class AnnouncementsState extends State<Announcements> {
       if (mounted) {}
       final response = await http.get(
         Uri.parse(
-            'https://churchapp-tstf.onrender.com/post?skip=${pageNum * numOfPostsPerPage}&limit=$numOfPostsPerPage'),
+            'http://localhost:3000/post?skip=${pageNum * numOfPostsPerPage}&limit=$numOfPostsPerPage'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': userToken!
