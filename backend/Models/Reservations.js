@@ -15,6 +15,10 @@ const ReservationSchema = new Schema({
         type: Date,
         required: true,
     },
+    isFixed: {
+        type: Boolean,
+        required: true
+    },
     status: {
         type: String,
         enum: ['Pending','Approved','Rejected'],

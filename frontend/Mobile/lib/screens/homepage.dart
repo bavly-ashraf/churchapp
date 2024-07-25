@@ -66,7 +66,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
       form.save();
       try {
         final response = await http.post(
-            Uri.parse('http://localhost:3000/post'),
+            Uri.parse('https://churchapp-tstf.onrender.com/post'),
             headers: <String, String>{
               'Content-Type': 'application/json; charset=UTF-8',
               'Authorization': userToken!
@@ -124,12 +124,16 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
       form.save();
       try {
         final response = await http.post(
-            Uri.parse('http://localhost:3000/hall'),
+            Uri.parse('https://churchapp-tstf.onrender.com/hall'),
             headers: <String, String>{
               'Content-Type': 'application/json; charset=UTF-8',
               'Authorization': userToken!
             },
-            body: jsonEncode(<String, String>{'name': _newHallName!, 'floor': _newHallFloor, 'building': _newHallBuilding}));
+            body: jsonEncode(<String, String>{
+              'name': _newHallName!,
+              'floor': _newHallFloor,
+              'building': _newHallBuilding
+            }));
         if (response.statusCode == 201 && mounted) {
           Navigator.pop(context);
           _hallKey.currentState?.getAllHalls();
@@ -214,70 +218,71 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
 
   Widget createNewAnnouncement() {
     return StatefulBuilder(
-      builder: (BuildContext context, StateSetter setModalState) {
-        return SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              children: <Widget>[
-                Text(
-                  'تنبيه جديد',
-                  style: TextStyle(
-                      fontSize: 25, color: Theme.of(context).primaryColor),
-                ),
-                Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Directionality(
-                        textDirection: TextDirection.rtl,
-                        child: Form(
-                          key: _newAnnounceFormKey,
-                          child: Column(
-                            children: <Widget>[
-                              TextFormField(
-                                validator: (value) {
-                                  if (value != '') {
-                                    return null;
-                                  }
-                                  return 'من فضلك اكتب تنبيه';
-                                },
-                                onSaved: (newAnnounce) =>
-                                    _newAnnounce = newAnnounce,
-                                decoration: const InputDecoration(
-                                  hintText: 'اكتب تنبيه جديد',
-                                ),
+        builder: (BuildContext context, StateSetter setModalState) {
+      return SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            children: <Widget>[
+              Text(
+                'تنبيه جديد',
+                style: TextStyle(
+                    fontSize: 25, color: Theme.of(context).primaryColor),
+              ),
+              Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Directionality(
+                      textDirection: TextDirection.rtl,
+                      child: Form(
+                        key: _newAnnounceFormKey,
+                        child: Column(
+                          children: <Widget>[
+                            TextFormField(
+                              validator: (value) {
+                                if (value != '') {
+                                  return null;
+                                }
+                                return 'من فضلك اكتب تنبيه';
+                              },
+                              onSaved: (newAnnounce) =>
+                                  _newAnnounce = newAnnounce,
+                              decoration: const InputDecoration(
+                                hintText: 'اكتب تنبيه جديد',
                               ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              ElevatedButton(
-                                  onPressed:
-                                      loadingPost == true ? null : (){
-                                        setModalState((){
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            ElevatedButton(
+                                onPressed: loadingPost == true
+                                    ? null
+                                    : () {
+                                        setModalState(() {
                                           loadingPost = true;
                                         });
-                                        _uploadPost().then((value) => setModalState((){
-                                          loadingPost = false;
-                                        }));
+                                        _uploadPost()
+                                            .then((value) => setModalState(() {
+                                                  loadingPost = false;
+                                                }));
                                       },
-                                  child: loadingPost == true
-                                      ? const Padding(
-                                          padding: EdgeInsets.all(8),
-                                          child: CircularProgressIndicator())
-                                      : const Text('نشر التنبيه'))
-                            ],
-                          ),
-                        ))),
-              ],
-            ),
+                                child: loadingPost == true
+                                    ? const Padding(
+                                        padding: EdgeInsets.all(8),
+                                        child: CircularProgressIndicator())
+                                    : const Text('نشر التنبيه'))
+                          ],
+                        ),
+                      ))),
+            ],
           ),
-        );
-      }
-    );
+        ),
+      );
+    });
   }
 
   Widget createNewHall() {
     return StatefulBuilder(
-      builder: (BuildContext context, StateSetter setModalState){
+        builder: (BuildContext context, StateSetter setModalState) {
       return SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(10),
@@ -356,15 +361,17 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
                               height: 20,
                             ),
                             ElevatedButton(
-                                onPressed:
-                                    loadingHall == true ? null : (){
-                                      setModalState((){
-                                        loadingHall = true;
-                                      });
-                                      _uploadHall().then((value) => setModalState((){
-                                        loadingHall = false;
-                                      }));
-                                    },
+                                onPressed: loadingHall == true
+                                    ? null
+                                    : () {
+                                        setModalState(() {
+                                          loadingHall = true;
+                                        });
+                                        _uploadHall()
+                                            .then((value) => setModalState(() {
+                                                  loadingHall = false;
+                                                }));
+                                      },
                                 child: loadingHall == true
                                     ? const Padding(
                                         padding: EdgeInsets.all(8),
@@ -377,8 +384,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
           ),
         ),
       );
-      }
-    );
+    });
   }
 
   @override
@@ -451,10 +457,15 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
               actions: <Widget>[
                 IconButton(
                   onPressed: logout,
+                  icon: const Icon(Icons.pending_actions),
+                  tooltip: 'متابعة الحجوزات',
+                ),
+                const SizedBox(width: 10),
+                IconButton(
+                  onPressed: logout,
                   icon: const Icon(Icons.logout),
                   tooltip: 'تسجيل الخروج',
                 ),
-                const SizedBox(width: 10),
               ],
               backgroundColor: Theme.of(context).colorScheme.inversePrimary,
             ),

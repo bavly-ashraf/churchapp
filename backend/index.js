@@ -11,7 +11,16 @@ const authRoute = require('./Routes/authRoute');
 const postRoute = require('./Routes/postRoute');
 const reactRoute = require('./Routes/reactRoute');
 const hallRoute = require('./Routes/hallRoute');
-const reservationRoute = require('./Routes/reservationRoute')
+const reservationRoute = require('./Routes/reservationRoute');
+
+//////////////////// Firebase Initialization ////////////////////////
+const admin = require("firebase-admin");
+const serviceAccount = require("./Utils/church-reservation-serviceKey.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+/////////////////////////////////////////////////////////////////////
 
 
 app.use(express.urlencoded({extended: true}));

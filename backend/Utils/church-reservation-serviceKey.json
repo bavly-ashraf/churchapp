@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "church-reservation-e7dea",
+  "private_key_id": "88a30e9a2e566e562b44c6eab31e6d9d425f09e4",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCaLb48sUH5FdsX\ny5TJ5mqVH08sHZLGZvrLmzJCBX7Y9MUabYvbcRXcd9Z98gxL316qwkby/f93Xb7b\nyHRsBCbFDSuVCmH2SKTaXfFBdUmWPlATwhqB8LXdiD4cwJ/dS7+CanRWtetNdG3Q\n1m6pCOGvBx7C7UJEP5RHtoJnqCaJWtDNzgJ/GIs+H20H3i6U1kZS8H8fBbfEwQHZ\ndzcys9Gr05lnfToEbovO8e/Imn2/h9ECniVoHvz5rCSFEA4UVwFd2alZtAoRktsT\nuTdLRzCNRMqV6hVS8OD4FqRwPC85J4eYS2B5NGZVbYEW/qItdFdSXr+RvcW/Uf63\n26eukN5xAgMBAAECggEAAe8zfRLzQzMHP+3ttLfHnA3bwi+vzP3zRRUyJPppLEMr\n6ug3cj4hulWlkwhzp4sKpsVPuxI9P4vlTmAeN9G4g83lv1W1Q3AHY3b8xSe5z+EB\nw7Gyf/FbcsdYEifHibD+2t3HjmPzaxIcI5vhIQ1LuZSzCdqMs4sBqwGq8q59J0l/\nq0fuFayT+cfHyCgJbhPSSQ8tBd3YqpaAxjmbfn8MTEhhfclIeVBqTYjgmgmjQYSP\nCSXZUTNA4TcQffjrkclUF/TS8NGB5RBsKfe+2EHZ26eqtmyZ3d6ov+a/IAqLsu5Y\n97kjKvGiHTiqYr9QTe6MkvP5I2dZNJrQmEnDypZr3QKBgQDJ1NnDcBWkvBf56H3J\nrFvm+UsnPoTXDsixXmjtwIELuDKFgTPCEq/X0W+v/G5lLW/6WeA7aDkMBscBbSkz\n7FLfOgFCGQMxRCHBPxGnZtPZOOvQGyqopyxeznPIE+I1lHxXZiUCLR6RML8Jdv8P\nveRUk+zwEAERaABu4hYLE4L9pQKBgQDDjtV3JTi3Oms3Da/CWkXMbzfhoc8XhvuM\na65nTXJtvT6b012L/tsTlmYbtV6s4Ewgicyiw92ClpmSirxrQTBNo5k7stA51zpj\nuv9DTTvPCcYRGeakBVkPBoifP5O7Yd8iyUXs8Z/41krODJgc5/D91vKtYB3PDZoy\nol3VKPWb3QKBgFRujoqLoQJBDWamM7jiOa/uKdpI9RliPeK1NAABv/o/HCNtYVGW\nr6kBHE/qsePxlh6M6pjviK3XR/j4yXvHKQPpKA2WmRdLATPuRlxZT9ZXUY7FTpsv\nFAi1JQpWBxOTAlEtkd3PMjJayhATj6/uKE6Zc00Z5Nh7QXMhcUdA6lNhAoGBALRs\nZrRLah1az6p2fS9SPE2WWzdYI4owZosymjEC+k0XKdl41DkihJt4ynJMDrJvKq1m\nlZ+iGA+wxLW4PIi0F026X9j9bDHBSkTTNUmxyzmEafJDNFEmAfnj7E8IyFM8xDMD\nAfnPH+nkRBYA9qLMt8Jq+3FMWZQ7l4WZ2fqdlKUdAoGBAK9dg9ekYjxKW+elVK/h\nLbNC6QU9Raakk8smf08SXEONa6F9aIooVeY8KsGL/jUYKXC9HM1QjQrPhiIKiZBG\nRYYks9TQzGJCgR/zXP33hN6501J2RVon0rM3SoLQ43QJKMX2j/3ElUg0e2mu6f9t\nvZgTPwZEOwWTM6K89nWViWue\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-w765u@church-reservation-e7dea.iam.gserviceaccount.com",
+  "client_id": "112903718811465665095",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-w765u%40church-reservation-e7dea.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

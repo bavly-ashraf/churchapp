@@ -13,7 +13,7 @@ class SignupPage extends StatefulWidget {
 
 class _SignupPageState extends State<SignupPage> {
   final _formKey = GlobalKey<FormState>();
-  final url = Uri.parse('http://localhost:3000/user/signup');
+  final url = Uri.parse('https://churchapp-tstf.onrender.com/user/signup');
 
   String? _userName;
   String? _email;

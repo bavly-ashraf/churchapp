@@ -35,6 +35,9 @@ const userSchema = new Schema({
         enum: ['admin','user'],
         default: 'user',
     },
+    firebaseToken: {
+        type: String
+    },
     createdAt: {
         type: Date,
         default: Date.now,

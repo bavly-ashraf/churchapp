@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "756177572893",
+    "project_id": "church-reservation-e7dea",
+    "storage_bucket": "church-reservation-e7dea.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:756177572893:android:8d12d261d0b414e77662f4",
+        "android_client_info": {
+          "package_name": "com.example.church"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSGYRjxv3RkIu4e2y99UbblImKGiAljbo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

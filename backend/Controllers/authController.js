@@ -34,5 +34,11 @@ const login = async (req,res,next)=>{
     res.status(200).json({message:"success", user, token});
 }
 
+const firebaseToken = async (req,res,next)=> {
+    const { fbToken } = req.body;
+    await User.findByIdAndUpdate(req.user.id, {firebaseToken:fbToken});
+    res.status(201).json({message: 'success'});
+}
 
-module.exports = {signup, login};
+
+module.exports = {signup, login, firebaseToken};
