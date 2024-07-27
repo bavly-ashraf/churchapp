@@ -14,19 +14,56 @@ const getSameDays = (startTime,endTime) => {
     return sameDays;
 }
 
-const sendPushNotification = async (title,body)=>{
-    const topic = 'all';
-    const message = {
-        notification: {
-            title,
-            body
-        },
-        topic
-    }
-    try{
-        await getMessaging().send(message)
-    }catch(e){
-        console.log(e);
+const sendPushNotification = async (title,body, tokens, data)=>{
+    if(Array.isArray(tokens) && tokens?.length > 0){
+        const message = {
+            notification: {
+                title,
+                body
+            },
+            tokens
+        }
+        if(data){
+            message.data = {reservationID: data};
+        }
+        try{
+            await getMessaging().sendEachForMulticast(message)
+        }catch(e){
+            console.log(e);
+        }
+    }else if(tokens && !Array.isArray(tokens)){
+        const message = {
+            notification: {
+                title,
+                body
+            },
+            token: tokens
+        }
+        if(data){
+            message.data = {reservationID: data};
+        }
+        try{
+            await getMessaging().send(message)
+        }catch(e){
+            console.log(e);
+        }
+    }else{
+        const topic = 'all';
+        const message = {
+            notification: {
+                title,
+                body
+            },
+            topic
+        }
+        if(data){
+            message.data = {reservationID: data};
+        }
+        try{
+            await getMessaging().send(message)
+        }catch(e){
+            console.log(e);
+        }
     }
 }
 

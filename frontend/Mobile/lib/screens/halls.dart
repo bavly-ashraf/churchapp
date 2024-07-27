@@ -38,7 +38,7 @@ Future<void> getAllHalls() async {
       });
       }
       final response = await http.get(
-        Uri.parse('https://churchapp-tstf.onrender.com/hall'),
+        Uri.parse('http://192.168.1.14:3000/hall'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': userToken!

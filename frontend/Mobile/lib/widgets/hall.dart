@@ -35,7 +35,7 @@ class Hall extends StatelessWidget {
     Future<void> deleteHall() async {
       // try {
       final response = await http.delete(
-        Uri.parse('https://churchapp-tstf.onrender.com/hall/$hallID'),
+        Uri.parse('http://192.168.1.14:3000/hall/$hallID'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': userToken

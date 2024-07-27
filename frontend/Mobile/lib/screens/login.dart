@@ -15,7 +15,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final url = Uri.parse('https://churchapp-tstf.onrender.com/user/login');
+  final url = Uri.parse('http://192.168.1.14:3000/user/login');
 
   String? _userName;
   String? _pass;

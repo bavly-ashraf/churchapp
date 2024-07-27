@@ -52,7 +52,7 @@ class _PostState extends State<Post> {
     try {
       final response = await http.get(
           Uri.parse(
-              'https://churchapp-tstf.onrender.com/react/${widget.body['_id']}'),
+              'http://192.168.1.14:3000/react/${widget.body['_id']}'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
             'Authorization': userToken!
@@ -129,7 +129,7 @@ class _PostState extends State<Post> {
     try {
       final response = await http.delete(
           Uri.parse(
-              'https://churchapp-tstf.onrender.com/post/${widget.body['_id']}'),
+              'http://192.168.1.14:3000/post/${widget.body['_id']}'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
             'Authorization': userToken!
@@ -181,7 +181,7 @@ class _PostState extends State<Post> {
     try {
       final response = await http.post(
           Uri.parse(
-              'https://churchapp-tstf.onrender.com/react/${widget.body['_id']}'),
+              'http://192.168.1.14:3000/react/${widget.body['_id']}'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
             'Authorization': userToken!

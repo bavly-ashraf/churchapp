@@ -24,6 +24,10 @@ const ReservationSchema = new Schema({
         enum: ['Pending','Approved','Rejected'],
         default: 'Pending',
     },
+    isConfirmed: {
+        type: Boolean,
+        default: false
+    },
     reason: {
         type: String,
         required: true,

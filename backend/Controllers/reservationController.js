@@ -63,13 +63,19 @@ const changeStatus = async (req, res, next) => {
     res.status(200).json({message:'success',updatedReservation});
 };
 
+const confirmReservation = async (req, res, next) => {
+    const { hallID } = req.params;
+    const { confirmAction } = req.body;
+    
+};
+
 const deleteReservation = async (req, res, next) => {
     const { id } = req.params;
     const deletedReservation = await Reservation.findByIdAndDelete(id).populate('hall');
     const body = `${deletedReservation.hall.name} بقيت متاحة يوم ${deletedReservation.startTime.toLocaleDateString('en-GB')} في الوقت من ${deletedReservation.startTime.toLocaleString([], {hour: '2-digit',minute: '2-digit'}).replace('PM','م').replace('AM','ص')} ل ${deletedReservation.endTime.toLocaleString([], {hour: '2-digit',minute: '2-digit'}).replace('PM','م').replace('AM','ص')}`;
     await Post.create({body,creator:process.env.ADMIN_ID})
-    await sendPushNotification('test',body);
+    await sendPushNotification('قاعة متاحة',body);
     res.status(200).json({message:'success', deletedReservation});
 };
 
-module.exports = {createReservation, changeStatus, deleteReservation, getPendingReservations, getReservationsForUser, getReservationsForCalendar};
+module.exports = {createReservation, changeStatus, confirmReservation, deleteReservation, getPendingReservations, getReservationsForUser, getReservationsForCalendar};

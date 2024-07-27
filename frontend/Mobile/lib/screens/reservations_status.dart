@@ -45,8 +45,8 @@ class _Reservations extends State<ReservationsStatus> {
       });
       final response = await http.get(
         Uri.parse(role == 'user'
-            ? 'https://churchapp-tstf.onrender.com/reservation/user/${widget.hallID}'
-            : 'https://churchapp-tstf.onrender.com/reservation/pending/${widget.hallID}'),
+            ? 'http://192.168.1.14:3000/reservation/user/${widget.hallID}'
+            : 'http://192.168.1.14:3000/reservation/pending/${widget.hallID}'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': userToken!
@@ -80,7 +80,7 @@ class _Reservations extends State<ReservationsStatus> {
       });
       final response = await http.post(
           Uri.parse(
-              'https://churchapp-tstf.onrender.com/reservation/status/$reservationID'),
+              'http://192.168.1.14:3000/reservation/status/$reservationID'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
             'Authorization': userToken!
