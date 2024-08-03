@@ -1,7 +1,7 @@
 node_modules
 .env
 flutter
-backend/Utils/church-reservation-serviceKey.json
+backend/church-reservation-serviceKey.json
 
 # Miscellaneous
 *.class
