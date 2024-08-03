@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { signup, login, firebaseToken } = require('../Controllers/authController');
 const { signupValidation, loginValidation } = require('../Utils/authenticationSchema');
-const { uploadImage } = require('../Utils/fileUpload');
+// const { uploadImage } = require('../Utils/fileUpload');
 const { verifyUser } = require('../Utils/verifyToken');
 
-router.post('/signup', uploadImage, signupValidation ,signup);
+// router.post('/signup', uploadImage, signupValidation ,signup);
+router.post('/signup', signupValidation ,signup);
 
 router.post('/login', loginValidation , login);
 

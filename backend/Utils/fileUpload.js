@@ -1,4 +1,4 @@
-const multer = require('multer');
+// const multer = require('multer');
 
 const fileFilter = (req, file, cb) => {
 
@@ -20,11 +20,11 @@ const fileFilter = (req, file, cb) => {
 //     }
 //   })
 
-  const upload = multer({ dest: 'uploads/', fileFilter});
+  // const upload = multer({ dest: 'uploads/', fileFilter});
   
-  const uploadImage = upload.single('profilepic');
+  // const uploadImage = upload.single('profilepic');
 
-  const uploadAttachments = upload.array('attachments', 4);
+  // const uploadAttachments = upload.array('attachments', 4);
   
 
-  module.exports = {uploadImage, uploadAttachments};
+  // module.exports = {uploadImage, uploadAttachments};
