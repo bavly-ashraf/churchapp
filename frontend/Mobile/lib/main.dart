@@ -14,34 +14,43 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await firebaseInit();
   await initNotifications();
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('token');
   final userData = prefs.getString('userData');
+  await firebaseInit(token);
   await firebaseTokenCheck(userData,token);
   runApp(MyApp(
     token: token,
   ));
 }
 
-    Future<void> reservationAction(String reservationAction) async {
-      // try{
-      // final response = await http.post(Uri.parse('http://192.168.1.14:3000/reservation/confirmation'),
-      //     headers: <String, String>{
-      //     'Content-Type': 'application/json; charset=UTF-8',
-      //     'Authorization': token
-      //   },
-      //   body: jsonEncode(<String,bool>{
-      //     'confirmAction': reservationAction == 'confirm'? true : false
-      //   }));
-      // Navigator.pop(navigatorKey.currentState!.context);
-      // }catch(e){
-        
-      // }
+    Future<void> reservationAction(String reservationAction, String? token) async {
+      try{
+      final response = await http.post(Uri.parse('https://churchapp-tstf.onrender.com/reservation/confirmation'),
+          headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': token!
+        },
+        body: jsonEncode(<String,bool>{
+          'confirmAction': reservationAction == 'confirm'? true : false
+        }));
+      switch(response.statusCode){
+        case 200: {
+          if(navigatorKey.currentState!.mounted){
+            Navigator.pop(navigatorKey.currentState!.context);
+          }
+        }
+        default: {
+          print(response);
+        }
+      }
+      }catch(e){
+        print(e);
+      }
     }
 
-    Future<dynamic> showReservationDialog(RemoteMessage message) async{
+    Future<dynamic> showReservationDialog(RemoteMessage message, String? token) async{
       return navigatorKey.currentState!.push(
         MaterialPageRoute(builder: (context)=> 
         Directionality(
@@ -50,15 +59,15 @@ Future<void> main() async {
           title: Text(message.notification!.title!),
           content: Text(message.notification!.body!),
           actions: [
-            TextButton(onPressed: ()=>reservationAction('confirm'), child: const Text('أكد الحجز')),
-            TextButton(onPressed: ()=>reservationAction('cancel'), child: const Text('الغي الحجز')),
+            TextButton(onPressed: ()=>reservationAction('confirm',token), child: const Text('أكد الحجز')),
+            TextButton(onPressed: ()=>reservationAction('cancel',token), child: const Text('الغي الحجز')),
           ],
         ))
         )
       );
       }
 
-Future<void> firebaseInit() async {
+Future<void> firebaseInit(String? token) async {
   await Firebase.initializeApp();
   await FirebaseMessaging.instance.subscribeToTopic('all');
   await FirebaseMessaging.instance.requestPermission(provisional: true);
@@ -68,10 +77,19 @@ Future<void> firebaseInit() async {
     if (message.notification != null) {
       displayNotification(message.notification!.title!, message.notification!.body!);
     if(message.data.containsKey('reservationID')){
-      showReservationDialog(message);
+      showReservationDialog(message, token!);
     }
     }
   });
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) { 
+    if(message.data.containsKey('reservationID')){
+      showReservationDialog(message,token);
+    }
+  });
+  RemoteMessage? fromTerminatedStateMessage = await FirebaseMessaging.instance.getInitialMessage();
+  if(fromTerminatedStateMessage != null){
+      showReservationDialog(fromTerminatedStateMessage,token);
+  }
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
@@ -131,7 +149,7 @@ Future<void> firebaseTokenCheck(String? userData, String? token) async {
 Future<void> saveToken(String token) async {
   try{
   final fbToken = await FirebaseMessaging.instance.getToken();
-  final response = await http.post(Uri.parse('http://192.168.1.14:3000/user/fb-token'),
+  final response = await http.post(Uri.parse('https://churchapp-tstf.onrender.com/user/fb-token'),
           headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': token

@@ -89,7 +89,7 @@ class _Reservations extends State<Reservations> {
     });
     final response = await http.get(
       Uri.parse(
-          'http://192.168.1.14:3000/reservation/calendar/${widget.hallID}?firstDay=${firstDay.toIso8601String()}&lastDay=${lastDay.toIso8601String()}'),
+          'https://churchapp-tstf.onrender.com/reservation/calendar/${widget.hallID}?firstDay=${firstDay.toIso8601String()}&lastDay=${lastDay.toIso8601String()}'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': userToken!
@@ -136,7 +136,7 @@ class _Reservations extends State<Reservations> {
 
   Future<void> _deleteEvent(String id) async {
     final response = await http.delete(
-      Uri.parse('http://192.168.1.14:3000/reservation/$id'),
+      Uri.parse('https://churchapp-tstf.onrender.com/reservation/$id'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': userToken!
@@ -178,7 +178,7 @@ class _Reservations extends State<Reservations> {
         _isFixed? _selectedEndDate!.day : _selectedDate!.day, _selectedEndTime!.hour, _selectedEndTime!.minute);
     try {
       final response = await http.post(
-          Uri.parse('http://192.168.1.14:3000/reservation/${widget.hallID}'),
+          Uri.parse('https://churchapp-tstf.onrender.com/reservation/${widget.hallID}'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
             'Authorization': userToken!

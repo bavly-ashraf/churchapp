@@ -7,7 +7,7 @@ router.post('/:id', verifyUser, createReservation);
 
 router.post('/status/:id', verifyAdmin, changeStatus);
 
-router.post('/confirmation/:hallID', verifyUser, confirmReservation);
+router.post('/confirmation/:id', verifyUser, confirmReservation);
 
 router.get('/pending/:hallID', verifyAdmin, getPendingReservations);
 
