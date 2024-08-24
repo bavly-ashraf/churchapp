@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:church/screens/announcements.dart';
 import 'package:church/screens/halls.dart';
 import 'package:church/screens/login.dart';
+import 'package:church/screens/reservations_status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -48,7 +49,6 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
     getUserData();
-    _getPendingCount();
   }
 
   Future<void> getUserData() async {
@@ -60,6 +60,9 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
       role = userData['role'];
       showFab = (role == 'user') ? false : true;
     });
+    if(userData['role'] == 'admin'){
+    _getPendingCount();
+    }
   }
 
   Future<void> _getPendingCount() async {
@@ -477,7 +480,12 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
               automaticallyImplyLeading: false,
               actions: <Widget>[
                 if(role == 'admin') IconButton(
-                  onPressed: logout,
+                  onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ReservationsStatus()
+                    )
+                    ),
                   icon: Badge.count(
                     count: _count,
                     isLabelVisible: (_count > 0),

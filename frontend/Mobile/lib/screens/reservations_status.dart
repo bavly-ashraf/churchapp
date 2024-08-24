@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -248,7 +249,14 @@ class _Reservations extends State<ReservationsStatus> {
                                             height: 8,
                                           ),
                                           Text(reservations[index]['reserver']
-                                              ['username'])
+                                              ['username']),
+                                          const SizedBox(
+                                            height: 8,
+                                          ),
+                                          if(widget.hallName == null) ...[
+                                            Text(reservations[index]['hall']['name']),
+                                            Text('${reservations[index]['hall']['floor']} - ${reservations[index]['hall']['building']}', style: const TextStyle(fontSize: 10),)
+                                            ]
                                         ]
                                       ],
                                     ),
