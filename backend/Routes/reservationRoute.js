@@ -1,6 +1,6 @@
 const express = require('express');
 const { verifyAdmin, verifyUser } = require('../Utils/verifyToken');
-const { createReservation, changeStatus, confirmReservation, deleteReservation, getPendingReservations, getReservationsForUser, getReservationsForCalendar} = require('../Controllers/reservationController');
+const { createReservation, changeStatus, confirmReservation, deleteReservation, getPendingReservationsCount, getAllPendingReservations, getPendingReservations, getReservationsForUser, getReservationsForCalendar} = require('../Controllers/reservationController');
 const router = express.Router();
 
 router.post('/:id', verifyUser, createReservation);
@@ -8,6 +8,10 @@ router.post('/:id', verifyUser, createReservation);
 router.post('/status/:id', verifyAdmin, changeStatus);
 
 router.post('/confirmation/:id', verifyUser, confirmReservation);
+
+router.get('/pending', verifyAdmin, getAllPendingReservations);
+
+router.get('/pending/count', verifyAdmin, getPendingReservationsCount);
 
 router.get('/pending/:hallID', verifyAdmin, getPendingReservations);
 

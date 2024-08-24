@@ -29,6 +29,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
   String? _newHallName;
   String _newHallFloor = 'الدور الأرضي';
   String _newHallBuilding = 'مبنى الخدمات الرئيسي';
+  int _count = 0;
 
   //sharedPref variables
   dynamic userData;
@@ -47,6 +48,7 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
     getUserData();
+    _getPendingCount();
   }
 
   Future<void> getUserData() async {
@@ -58,6 +60,25 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
       role = userData['role'];
       showFab = (role == 'user') ? false : true;
     });
+  }
+
+  Future<void> _getPendingCount() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://churchapp-tstf.onrender.com/reservation/pending/count'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': userToken!
+        });
+        if(response.statusCode == 200){
+          int pendingCount = jsonDecode(response.body)['foundedReservationsCount'];
+          setState(() {
+            _count = pendingCount;
+          });
+        }
+    } catch(e) {
+      print(e);
+    }
   }
 
   Future<void> _uploadPost() async {
@@ -455,11 +476,15 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
               centerTitle: true,
               automaticallyImplyLeading: false,
               actions: <Widget>[
-                // IconButton(
-                //   onPressed: logout,
-                //   icon: const Icon(Icons.pending_actions),
-                //   tooltip: 'متابعة الحجوزات',
-                // ),
+                if(role == 'admin') IconButton(
+                  onPressed: logout,
+                  icon: Badge.count(
+                    count: _count,
+                    isLabelVisible: (_count > 0),
+                    child: const Icon(Icons.pending_actions),
+                    ),
+                  tooltip: 'متابعة الحجوزات',
+                ),
                 const SizedBox(width: 10),
                 IconButton(
                   onPressed: logout,

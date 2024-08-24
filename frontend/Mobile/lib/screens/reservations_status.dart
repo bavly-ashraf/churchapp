@@ -7,10 +7,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ReservationsStatus extends StatefulWidget {
   const ReservationsStatus(
-      {super.key, required this.hallID, required this.hallName});
+      {super.key, this.hallID, this.hallName});
 
-  final String hallID;
-  final String hallName;
+  final String? hallID;
+  final String? hallName;
 
   @override
   State<ReservationsStatus> createState() => _Reservations();
@@ -44,9 +44,13 @@ class _Reservations extends State<ReservationsStatus> {
         loading = true;
       });
       final response = await http.get(
-        Uri.parse(role == 'user'
-            ? 'https://churchapp-tstf.onrender.com/reservation/user/${widget.hallID}'
-            : 'https://churchapp-tstf.onrender.com/reservation/pending/${widget.hallID}'),
+        Uri.parse(
+          widget.hallID == null
+            ?
+            'https://churchapp-tstf.onrender.com/reservation/pending':
+              role == 'user'
+                ? 'https://churchapp-tstf.onrender.com/reservation/user/${widget.hallID}'
+                : 'https://churchapp-tstf.onrender.com/reservation/pending/${widget.hallID}'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': userToken!
@@ -183,7 +187,7 @@ class _Reservations extends State<ReservationsStatus> {
     return Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          title: Text('حالة الحجوزات في ${widget.hallName}'),
+          title: Text('حالة الحجوزات في ${widget.hallName ?? 'كل القاعات'}'),
           backgroundColor: Theme.of(context).primaryColor,
           foregroundColor: Colors.white,
         ),

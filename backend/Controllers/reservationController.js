@@ -32,6 +32,16 @@ const createReservation = async (req, res, next) => {
     }
 };
 
+const getPendingReservationsCount = async (req, res, next) => {
+    const foundedReservationsCount = await Reservation.countDocuments({status:'Pending'});
+    res.status(200).json({message:'success', foundedReservationsCount});
+}
+
+const getAllPendingReservations = async (req, res, next) => {
+    const foundedReservations = await Reservation.find({status:'Pending'}).populate('reserver hall').sort({'createdAt': -1});
+    res.status(200).json({message:'success', foundedReservations});
+}
+
 const getPendingReservations = async (req, res, next) => {
     const { hallID } = req.params;
     const foundedReservations = await Reservation.find({hall:hallID, status:'Pending'}).populate('reserver').sort({'createdAt': -1});
@@ -83,4 +93,4 @@ const deleteReservation = async (req, res, next) => {
     res.status(200).json({message:'success', deletedReservation});
 };
 
-module.exports = {createReservation, changeStatus, confirmReservation, deleteReservation, getPendingReservations, getReservationsForUser, getReservationsForCalendar};
+module.exports = {createReservation, changeStatus, confirmReservation, deleteReservation, getPendingReservationsCount, getAllPendingReservations, getPendingReservations, getReservationsForUser, getReservationsForCalendar};
