@@ -236,13 +236,13 @@ class _Reservations extends State<ReservationsStatus> {
                                         Text(
                                           DateFormat('dd/MM/yyyy').format(
                                               DateTime.parse(reservations[index]
-                                                  ['startTime']).toLocal()),
+                                                  ['startTime'])),
                                         ),
                                         const SizedBox(
                                           height: 8,
                                         ),
                                         Text(
-                                          '${DateFormat('hh:mm a').format(DateTime.parse(reservations[index]['startTime']).toLocal())} - ${DateFormat('hh:mm a').format(DateTime.parse(reservations[index]['endTime']).toLocal())}',
+                                          '${DateFormat('hh:mm a').format(DateTime.parse(reservations[index]['startTime']))} - ${DateFormat('hh:mm a').format(DateTime.parse(reservations[index]['endTime']))}',
                                         ),
                                         if (role == 'admin') ...[
                                           const SizedBox(
