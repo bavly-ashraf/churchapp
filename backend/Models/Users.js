@@ -1,5 +1,8 @@
 const {Schema, default: mongoose} = require('mongoose');
 const bcrypt = require('bcrypt');
+const Post = require('./Posts');
+const React = require('./Reacts');
+const Reservation = require('./Reservations');
 
 const userSchema = new Schema({
     username: {
@@ -50,6 +53,13 @@ userSchema.pre('save', async function() {
         const hashedPassword = await bcrypt.hash(password, 10);
         this.password = hashedPassword;
     }
+});
+
+userSchema.pre('deleteOne',async function(){
+    const { id } = this;
+    await Post.deleteMany({creator:id});
+    await React.deleteMany({creator:id});
+    await Reservation.deleteMany({reserver:id});
 })
 
 const User = mongoose.model('User',userSchema);
