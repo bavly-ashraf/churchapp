@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'package:intl/intl.dart';
+import 'package:timezone/timezone.dart' as tz;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Post extends StatefulWidget {
@@ -33,7 +34,7 @@ class _PostState extends State<Post> {
   @override
   void initState() {
     super.initState();
-    if(!mounted) return;
+    if (!mounted) return;
     getUserData();
   }
 
@@ -48,11 +49,10 @@ class _PostState extends State<Post> {
     getPostReacts();
   }
 
-    Future<void> getPostReacts() async {
+  Future<void> getPostReacts() async {
     try {
       final response = await http.get(
-          Uri.parse(
-              'https://churchapp-tstf.onrender.com/react/${widget.body['_id']}'),
+          Uri.parse('https://churchapp-tstf.onrender.com/react/${widget.body['_id']}'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
             'Authorization': userToken!
@@ -60,13 +60,13 @@ class _PostState extends State<Post> {
       if (response.statusCode == 200) {
         List<dynamic>? reacts = jsonDecode(response.body)['reacts'];
         String? selectedReact = jsonDecode(response.body)['isReacted'];
-          // getReactsData(reacts, selectedReact);
-          if(mounted){
+        // getReactsData(reacts, selectedReact);
+        if (mounted) {
           setState(() {
             allReacts = reacts;
             react = selectedReact;
           });
-          }
+        }
       } else {
         if (mounted) {
           showDialog(
@@ -92,8 +92,12 @@ class _PostState extends State<Post> {
             builder: (context) => Directionality(
                   textDirection: ui.TextDirection.rtl,
                   child: AlertDialog(
-                    title: Text(e.toString().contains('ClientException')?'مفيش نت':'حصل مشكلة'),
-                    content: Text(e.toString().contains('ClientException')? 'اتأكد ان النت شغال وجرب تاني':'حصل مشكلة في السيرفر'),
+                    title: Text(e.toString().contains('ClientException')
+                        ? 'مفيش نت'
+                        : 'حصل مشكلة'),
+                    content: Text(e.toString().contains('ClientException')
+                        ? 'اتأكد ان النت شغال وجرب تاني'
+                        : 'حصل مشكلة في السيرفر'),
                     actions: <Widget>[
                       TextButton(
                           onPressed: () => Navigator.pop(context),
@@ -128,8 +132,7 @@ class _PostState extends State<Post> {
   Future<void> _deletePost() async {
     try {
       final response = await http.delete(
-          Uri.parse(
-              'https://churchapp-tstf.onrender.com/post/${widget.body['_id']}'),
+          Uri.parse('https://churchapp-tstf.onrender.com/post/${widget.body['_id']}'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
             'Authorization': userToken!
@@ -164,8 +167,12 @@ class _PostState extends State<Post> {
             builder: (context) => Directionality(
                   textDirection: ui.TextDirection.rtl,
                   child: AlertDialog(
-                    title: Text(e.toString().contains('ClientException')?'مفيش نت':'حصل مشكلة'),
-                    content: Text(e.toString().contains('ClientException')? 'اتأكد ان النت شغال وجرب تاني':'حصل مشكلة في السيرفر'),
+                    title: Text(e.toString().contains('ClientException')
+                        ? 'مفيش نت'
+                        : 'حصل مشكلة'),
+                    content: Text(e.toString().contains('ClientException')
+                        ? 'اتأكد ان النت شغال وجرب تاني'
+                        : 'حصل مشكلة في السيرفر'),
                     actions: <Widget>[
                       TextButton(
                           onPressed: () => Navigator.pop(context),
@@ -180,8 +187,7 @@ class _PostState extends State<Post> {
   Future<void> _postReact() async {
     try {
       final response = await http.post(
-          Uri.parse(
-              'https://churchapp-tstf.onrender.com/react/${widget.body['_id']}'),
+          Uri.parse('https://churchapp-tstf.onrender.com/react/${widget.body['_id']}'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
             'Authorization': userToken!
@@ -219,8 +225,12 @@ class _PostState extends State<Post> {
             builder: (context) => Directionality(
                   textDirection: ui.TextDirection.rtl,
                   child: AlertDialog(
-                    title: Text(e.toString().contains('ClientException')?'مفيش نت':'حصل مشكلة'),
-                    content: Text(e.toString().contains('ClientException')? 'اتأكد ان النت شغال وجرب تاني':'حصل مشكلة في السيرفر'),
+                    title: Text(e.toString().contains('ClientException')
+                        ? 'مفيش نت'
+                        : 'حصل مشكلة'),
+                    content: Text(e.toString().contains('ClientException')
+                        ? 'اتأكد ان النت شغال وجرب تاني'
+                        : 'حصل مشكلة في السيرفر'),
                     actions: <Widget>[
                       TextButton(
                           onPressed: () => Navigator.pop(context),
@@ -348,8 +358,9 @@ class _PostState extends State<Post> {
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           Text(DateFormat('dd/MM/yyyy hh:mm a').format(
-                              DateTime.parse(widget.body['createdAt'])
-                                  .toLocal()))
+                              tz.TZDateTime.from(
+                                  DateTime.parse(widget.body['createdAt']),
+                                  tz.getLocation('Africa/Cairo'))))
                         ],
                       )
                     ],

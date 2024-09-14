@@ -8,19 +8,16 @@ const createReservation = async (req, res, next) => {
     const { startTime, endTime , isFixed } = req.body;
     if(isFixed){
         const sameDays = getSameDays(startTime,endTime);
+        const endDate = new Date(endTime);
         for(let day of sameDays){
-            const endDate = new Date(endTime);
-            let endFixedTime = new Date(day.getFullYear(),day.getMonth(),day.getDate(),endDate.getHours(),endDate.getMinutes(),endDate.getSeconds());
-            endFixedTime = new Date(endFixedTime.getTime() - (endFixedTime.getTimezoneOffset() * 60000)).toISOString().substring(0,23);
-            day = new Date(day.getTime() - (day.getTimezoneOffset() * 60000)).toISOString().substring(0,23);
+            let endFixedTime = new Date(day.getFullYear(),day.getMonth(),day.getDate(),endDate.getHours(),endDate.getMinutes(),endDate.getSeconds()).toISOString();
+            day = day.toISOString();
             const foundedReservations = await Reservation.find({hall:id,status:'Approved',$or:[{startTime: {$lt: day},endTime: {$gt: day}}, {startTime: {$lt: endFixedTime},endTime: {$gt: endFixedTime}}, {startTime: {$lte: day},endTime: {$gte: endFixedTime}}]});
             if (foundedReservations && foundedReservations.length > 0) return next(new AppError('Already reserved',404));
         }
         sameDays.forEach(async el => {
-            const endDate = new Date(endTime);
-            let endFixedTime = new Date(el.getFullYear(),el.getMonth(),el.getDate(),endDate.getHours(),endDate.getMinutes(),endDate.getSeconds());
-            endFixedTime = new Date(endFixedTime.getTime() - (endFixedTime.getTimezoneOffset() * 60000)).toISOString().substring(0,23);
-            el = new Date(el.getTime() - (el.getTimezoneOffset() * 60000)).toISOString().substring(0,23);
+            let endFixedTime = new Date(el.getFullYear(),el.getMonth(),el.getDate(),endDate.getHours(),endDate.getMinutes(),endDate.getSeconds()).toISOString();
+            el = el.toISOString();
             await Reservation.create({...req.body, startTime: el, endTime: endFixedTime, status: req.user.role == 'admin'? 'Approved': 'Pending', hall:id, reserver:req.user.id});
         });
         res.status(201).json({message:'success'});

@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:church/screens/reservations_status.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:timezone/timezone.dart' as tz;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../utils.dart';
@@ -26,7 +27,8 @@ class _Reservations extends State<Reservations> {
   final _newReservationFormKey = GlobalKey<FormState>();
   String? _newReservationReason;
   final TextEditingController _selectedDateController = TextEditingController();
-  final TextEditingController _selectedEndDateController = TextEditingController();
+  final TextEditingController _selectedEndDateController =
+      TextEditingController();
   final TextEditingController _selectedStartTimeController =
       TextEditingController();
   final TextEditingController _selectedEndTimeController =
@@ -74,8 +76,10 @@ class _Reservations extends State<Reservations> {
         .toList()
         .map((el) => Event(
             el['reason'],
-            DateTime.parse(el['startTime']),
-            DateTime.parse(el['endTime']),
+            tz.TZDateTime.from(DateTime.parse(el['startTime']),
+                tz.getLocation('Africa/Cairo')),
+            tz.TZDateTime.from(
+                DateTime.parse(el['endTime']), tz.getLocation('Africa/Cairo')),
             el['reserver']['username'],
             el['_id'],
             el['reserver']['_id']))
@@ -157,7 +161,7 @@ class _Reservations extends State<Reservations> {
       if (_selectedDate!.isBefore(todayDateOnly) ||
           (_selectedEndTime!.hour <= _selectedStartTime!.hour &&
               _selectedEndTime!.minute <= _selectedStartTime!.minute) ||
-              (_isFixed && _selectedEndDate!.isBefore(_selectedDate!))) {
+          (_isFixed && _selectedEndDate!.isBefore(_selectedDate!))) {
         showDefaultMessage(
             'الميعاد غلط', 'من فضلك اتأكد ان التاريخ والميعاد مكتوبين صح');
       } else {
@@ -174,8 +178,12 @@ class _Reservations extends State<Reservations> {
         _selectedDate!.day,
         _selectedStartTime!.hour,
         _selectedStartTime!.minute);
-    DateTime finalEndDate = DateTime(_isFixed? _selectedEndDate!.year:_selectedDate!.year, _isFixed? _selectedEndDate!.month : _selectedDate!.month,
-        _isFixed? _selectedEndDate!.day : _selectedDate!.day, _selectedEndTime!.hour, _selectedEndTime!.minute);
+    DateTime finalEndDate = DateTime(
+        _isFixed ? _selectedEndDate!.year : _selectedDate!.year,
+        _isFixed ? _selectedEndDate!.month : _selectedDate!.month,
+        _isFixed ? _selectedEndDate!.day : _selectedDate!.day,
+        _selectedEndTime!.hour,
+        _selectedEndTime!.minute);
     try {
       final response = await http.post(
           Uri.parse('https://churchapp-tstf.onrender.com/reservation/${widget.hallID}'),
@@ -185,8 +193,8 @@ class _Reservations extends State<Reservations> {
           },
           body: jsonEncode({
             "reason": _newReservationReason,
-            "startTime": finalStartDate.toIso8601String(),
-            "endTime": finalEndDate.toIso8601String(),
+            "startTime": finalStartDate.toUtc().toIso8601String(),
+            "endTime": finalEndDate.toUtc().toIso8601String(),
             "isFixed": _isFixed,
           }));
       switch (response.statusCode) {
@@ -277,34 +285,34 @@ class _Reservations extends State<Reservations> {
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
-    switch(date){
+    switch (date) {
       case 'start':
-      {
-    if (picked != null &&
-        '${picked.day}/${picked.month}/${picked.year}' !=
-            _selectedDateController.text &&
-        picked != _selectedDate) {
-      setState(() {
-        _selectedDateController.text =
-            '${picked.day}/${picked.month}/${picked.year}';
-        _selectedDate = picked;
-      });
-    }
-      }
-      break;
+        {
+          if (picked != null &&
+              '${picked.day}/${picked.month}/${picked.year}' !=
+                  _selectedDateController.text &&
+              picked != _selectedDate) {
+            setState(() {
+              _selectedDateController.text =
+                  '${picked.day}/${picked.month}/${picked.year}';
+              _selectedDate = picked;
+            });
+          }
+        }
+        break;
       case 'end':
-      {
-            if (picked != null &&
-        '${picked.day}/${picked.month}/${picked.year}' !=
-            _selectedEndDateController.text &&
-        picked != _selectedEndDate) {
-      setState(() {
-        _selectedEndDateController.text =
-            '${picked.day}/${picked.month}/${picked.year}';
-        _selectedEndDate = picked;
-      });
-    }
-      }
+        {
+          if (picked != null &&
+              '${picked.day}/${picked.month}/${picked.year}' !=
+                  _selectedEndDateController.text &&
+              picked != _selectedEndDate) {
+            setState(() {
+              _selectedEndDateController.text =
+                  '${picked.day}/${picked.month}/${picked.year}';
+              _selectedEndDate = picked;
+            });
+          }
+        }
     }
   }
 
@@ -377,7 +385,7 @@ class _Reservations extends State<Reservations> {
                             ),
                             GestureDetector(
                               onTap: () {
-                                _selectDate(context,'start');
+                                _selectDate(context, 'start');
                               },
                               child: AbsorbPointer(
                                 child: TextFormField(
@@ -463,27 +471,31 @@ class _Reservations extends State<Reservations> {
                             const SizedBox(
                               height: 10,
                             ),
-                            (_isFixed? GestureDetector(
-                              onTap: () {
-                                _selectDate(context, 'end');
-                              },
-                              child: AbsorbPointer(
-                                child: TextFormField(
-                                    textDirection: ui.TextDirection.ltr,
-                                    textAlign: TextAlign.end,
-                                    decoration: const InputDecoration(
-                                      labelText: 'اختار اخر يوم',
-                                      suffixIcon: Icon(Icons.calendar_today),
-                                    ),
-                                    validator: (value) {
-                                      if (value != '') {
-                                        return null;
-                                      }
-                                      return 'من فضلك اختار اخر يوم';
+                            (_isFixed
+                                ? GestureDetector(
+                                    onTap: () {
+                                      _selectDate(context, 'end');
                                     },
-                                    controller: _selectedEndDateController),
-                              ),
-                            ) : Container()),
+                                    child: AbsorbPointer(
+                                      child: TextFormField(
+                                          textDirection: ui.TextDirection.ltr,
+                                          textAlign: TextAlign.end,
+                                          decoration: const InputDecoration(
+                                            labelText: 'اختار اخر يوم',
+                                            suffixIcon:
+                                                Icon(Icons.calendar_today),
+                                          ),
+                                          validator: (value) {
+                                            if (value != '') {
+                                              return null;
+                                            }
+                                            return 'من فضلك اختار اخر يوم';
+                                          },
+                                          controller:
+                                              _selectedEndDateController),
+                                    ),
+                                  )
+                                : Container()),
                             const SizedBox(
                               height: 10,
                             ),
@@ -630,9 +642,12 @@ class _Reservations extends State<Reservations> {
                                                 children: <Widget>[
                                                   const Text('من: '),
                                                   Text(
-                                                    DateFormat('hh:mm a')
-                                                        .format(value[index]
-                                                            .startTime.toLocal()),
+                                                    DateFormat('hh:mm a').format(
+                                                        tz.TZDateTime.from(
+                                                            value[index]
+                                                                .startTime,
+                                                            tz.getLocation(
+                                                                'Africa/Cairo'))),
                                                     textDirection:
                                                         ui.TextDirection.ltr,
                                                     style: const TextStyle(
@@ -645,9 +660,12 @@ class _Reservations extends State<Reservations> {
                                                 children: <Widget>[
                                                   const Text('الى: '),
                                                   Text(
-                                                    DateFormat('hh:mm a')
-                                                        .format(value[index]
-                                                            .endTime.toLocal()),
+                                                    DateFormat('hh:mm a').format(
+                                                        tz.TZDateTime.from(
+                                                            value[index]
+                                                                .endTime,
+                                                            tz.getLocation(
+                                                                'Africa/Cairo'))),
                                                     textDirection:
                                                         ui.TextDirection.ltr,
                                                     style: const TextStyle(

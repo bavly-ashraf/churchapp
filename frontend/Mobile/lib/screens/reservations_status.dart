@@ -4,11 +4,11 @@ import 'package:http/http.dart' as http;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:timezone/timezone.dart' as tz;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ReservationsStatus extends StatefulWidget {
-  const ReservationsStatus(
-      {super.key, this.hallID, this.hallName});
+  const ReservationsStatus({super.key, this.hallID, this.hallName});
 
   final String? hallID;
   final String? hallName;
@@ -45,11 +45,9 @@ class _Reservations extends State<ReservationsStatus> {
         loading = true;
       });
       final response = await http.get(
-        Uri.parse(
-          widget.hallID == null
-            ?
-            'https://churchapp-tstf.onrender.com/reservation/pending':
-              role == 'user'
+        Uri.parse(widget.hallID == null
+            ? 'https://churchapp-tstf.onrender.com/reservation/pending'
+            : role == 'user'
                 ? 'https://churchapp-tstf.onrender.com/reservation/user/${widget.hallID}'
                 : 'https://churchapp-tstf.onrender.com/reservation/pending/${widget.hallID}'),
         headers: <String, String>{
@@ -233,16 +231,18 @@ class _Reservations extends State<ReservationsStatus> {
                                         const SizedBox(
                                           height: 8,
                                         ),
-                                        Text(
-                                          DateFormat('dd/MM/yyyy').format(
-                                              DateTime.parse(reservations[index]
-                                                  ['startTime'])),
-                                        ),
+                                        Text(DateFormat('dd/MM/yyyy').format(
+                                            tz.TZDateTime.from(
+                                                DateTime.parse(
+                                                    reservations[index]
+                                                        ['startTime']),
+                                                tz.getLocation(
+                                                    'Africa/Cairo')))),
                                         const SizedBox(
                                           height: 8,
                                         ),
                                         Text(
-                                          '${DateFormat('hh:mm a').format(DateTime.parse(reservations[index]['startTime']))} - ${DateFormat('hh:mm a').format(DateTime.parse(reservations[index]['endTime']))}',
+                                          '${DateFormat('hh:mm a').format(tz.TZDateTime.from(DateTime.parse(reservations[index]['startTime']), tz.getLocation('Africa/Cairo')))} - ${DateFormat('hh:mm a').format(tz.TZDateTime.from(DateTime.parse(reservations[index]['endTime']), tz.getLocation('Africa/Cairo')))}',
                                         ),
                                         if (role == 'admin') ...[
                                           const SizedBox(
@@ -253,10 +253,15 @@ class _Reservations extends State<ReservationsStatus> {
                                           const SizedBox(
                                             height: 8,
                                           ),
-                                          if(widget.hallName == null) ...[
-                                            Text(reservations[index]['hall']['name']),
-                                            Text('${reservations[index]['hall']['floor']} - ${reservations[index]['hall']['building']}', style: const TextStyle(fontSize: 10),)
-                                            ]
+                                          if (widget.hallName == null) ...[
+                                            Text(reservations[index]['hall']
+                                                ['name']),
+                                            Text(
+                                              '${reservations[index]['hall']['floor']} - ${reservations[index]['hall']['building']}',
+                                              style:
+                                                  const TextStyle(fontSize: 10),
+                                            )
+                                          ]
                                         ]
                                       ],
                                     ),
