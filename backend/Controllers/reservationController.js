@@ -73,10 +73,10 @@ const changeStatus = async (req, res, next) => {
 const confirmReservation = async (req, res, next) => {
     const { id } = req.params;
     const { confirmAction } = req.body;
-    if(confirmAction == 'confirm'){
+    if(confirmAction){
         const updatedReservation = await Reservation.findByIdAndUpdate(id, { isConfirmed: true }, {new: true});
         res.status(200).json({message:'success', updatedReservation});
-    }else if(confirmAction == 'cancel'){
+    }else {
         deleteReservation(req,res,next);
     }
 };
