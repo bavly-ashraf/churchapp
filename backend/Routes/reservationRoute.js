@@ -21,7 +21,7 @@ router.get('/calendar/:hallID', verifyUser, getReservationsForCalendar);
 
 router.delete('/:id', verifyUser, deleteReservation);
 
-router.get('/scheduled', scheduledNotification);
+router.get('/scheduled', verifyUser, scheduledNotification);
 
 
 module.exports = router;

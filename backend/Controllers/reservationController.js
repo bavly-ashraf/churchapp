@@ -94,15 +94,13 @@ const deleteReservation = async (req, res, next) => {
 const scheduledNotification = async (req, res, next) => {
     const todaysDate = new Date();
     todaysDate.setHours(0,0,0,0);
-    console.log(todaysDate);
     const tomorrowsDate = new Date(todaysDate);
     tomorrowsDate.setDate(todaysDate.getDate() + 1);
-    console.log(tomorrowsDate);
     const todaysReservations = await Reservation.find({startTime:{$gte:todaysDate,$lt:tomorrowsDate},isConfirmed:false},'reserver hall startTime endTime').populate('reserver hall','firebaseToken name -_id');
-    console.log(todaysReservations);
     todaysReservations.forEach(reservation => {
       sendPushNotification('تأكيد الحجز', `من فضلك دوس هنا عشان تأكد حجزك ل${reservation.hall.name} بكرة في الوقت من ${reservation.startTime.toLocaleString([], {hour: '2-digit',minute: '2-digit'}).replace('PM','م').replace('AM','ص')} ل ${reservation.endTime.toLocaleString([], {hour: '2-digit',minute: '2-digit'}).replace('PM','م').replace('AM','ص')}`,reservation.reserver.firebaseToken,reservation.id);
     });
+    res.status(200).json({message:'success'});
 };
 
 module.exports = {createReservation, changeStatus, confirmReservation, deleteReservation, getPendingReservationsCount, getAllPendingReservations, getPendingReservations, getReservationsForUser, getReservationsForCalendar, scheduledNotification};
