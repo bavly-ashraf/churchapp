@@ -60,26 +60,28 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
       role = userData['role'];
       showFab = (role == 'user') ? false : true;
     });
-    if(userData['role'] == 'admin'){
-    _getPendingCount();
+    if (userData['role'] == 'admin') {
+      _getPendingCount();
     }
   }
 
   Future<void> _getPendingCount() async {
     try {
       final response = await http.get(
-        Uri.parse('https://churchapp-tstf.onrender.com/reservation/pending/count'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': userToken!
-        });
-        if(response.statusCode == 200){
-          int pendingCount = jsonDecode(response.body)['foundedReservationsCount'];
-          setState(() {
-            _count = pendingCount;
+          Uri.parse('https://churchapp-tstf.onrender.com/reservation/pending/count'),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+            'Authorization': userToken!
           });
-        }
-    } catch(e) {
+      if (response.statusCode == 200) {
+        int pendingCount =
+            jsonDecode(response.body)['foundedReservationsCount'];
+        setState(() {
+          _count = pendingCount;
+        });
+        print('count $pendingCount');
+      }
+    } catch (e) {
       print(e);
     }
   }
@@ -411,65 +413,65 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
     });
   }
 
+  void onExit(bool didpop, BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Directionality(
+              textDirection: TextDirection.rtl,
+              child: AlertDialog(
+                title: const Text('خروج'),
+                content: const Text('متاكد انك عايز تخرج؟'),
+                actions: <Widget>[
+                  TextButton(
+                      onPressed: () => SystemChannels.platform
+                          .invokeMethod('SystemNavigator.pop'),
+                      child: const Text('اه')),
+                  TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('لا'))
+                ],
+              ));
+        });
+  }
+
+  Future<void> removeToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+    await prefs.remove('userData');
+  }
+
+  void logout() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Directionality(
+              textDirection: TextDirection.rtl,
+              child: AlertDialog(
+                title: const Text('تسجيل خروج'),
+                content: const Text('متاكد انك عايز تسجل خروج؟'),
+                actions: <Widget>[
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const LoginPage()),
+                            (route) => false);
+                        removeToken();
+                      },
+                      child: const Text('اه')),
+                  TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('لا'))
+                ],
+              ));
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
-    void onExit(bool didpop, BuildContext context) {
-      showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return Directionality(
-                textDirection: TextDirection.rtl,
-                child: AlertDialog(
-                  title: const Text('خروج'),
-                  content: const Text('متاكد انك عايز تخرج؟'),
-                  actions: <Widget>[
-                    TextButton(
-                        onPressed: () => SystemChannels.platform
-                            .invokeMethod('SystemNavigator.pop'),
-                        child: const Text('اه')),
-                    TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('لا'))
-                  ],
-                ));
-          });
-    }
-
-    Future<void> removeToken() async {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('token');
-      await prefs.remove('userData');
-    }
-
-    void logout() {
-      showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return Directionality(
-                textDirection: TextDirection.rtl,
-                child: AlertDialog(
-                  title: const Text('تسجيل خروج'),
-                  content: const Text('متاكد انك عايز تسجل خروج؟'),
-                  actions: <Widget>[
-                    TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const LoginPage()),
-                              (route) => false);
-                          removeToken();
-                        },
-                        child: const Text('اه')),
-                    TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('لا'))
-                  ],
-                ));
-          });
-    }
-
     return PopScope(
         canPop: false,
         onPopInvoked: (didPop) => onExit(didPop, context),
@@ -479,20 +481,19 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
               centerTitle: true,
               automaticallyImplyLeading: false,
               actions: <Widget>[
-                if(role == 'admin') IconButton(
-                  onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ReservationsStatus()
-                    )
+                if (role == 'admin')
+                  IconButton(
+                    onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const ReservationsStatus())),
+                    icon: Badge.count(
+                      count: _count,
+                      isLabelVisible: (_count > 0),
+                      child: const Icon(Icons.pending_actions),
                     ),
-                  icon: Badge.count(
-                    count: _count,
-                    isLabelVisible: (_count > 0),
-                    child: const Icon(Icons.pending_actions),
-                    ),
-                  tooltip: 'متابعة الحجوزات',
-                ),
+                    tooltip: 'متابعة الحجوزات',
+                  ),
                 const SizedBox(width: 10),
                 IconButton(
                   onPressed: logout,
