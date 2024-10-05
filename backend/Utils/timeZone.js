@@ -1,8 +1,7 @@
- const moment = require('moment');
+ const moment = require('moment-timezone');
  
  const toLocalTimeZone = (date) => {
-        var today = moment(date);
-        today.tz('Africa/Cairo').format();
+        return new Date(moment(date).tz('Africa/Cairo').format());
     };
 
 module.exports = {toLocalTimeZone};

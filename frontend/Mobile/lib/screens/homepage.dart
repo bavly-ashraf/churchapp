@@ -79,7 +79,6 @@ class _Homepage extends State<Homepage> with SingleTickerProviderStateMixin {
         setState(() {
           _count = pendingCount;
         });
-        print('count $pendingCount');
       }
     } catch (e) {
       print(e);
