@@ -85,7 +85,7 @@ const confirmReservation = async (req, res, next) => {
 const deleteReservation = async (req, res, next) => {
     const { id } = req.params;
     const deletedReservation = await Reservation.findByIdAndDelete(id).populate('hall');
-    const body = `${deletedReservation.hall.name} بقيت متاحة يوم ${deletedReservation.startTime.toLocaleDateString('en-GB')} في الوقت من ${deletedReservation.startTime.toLocaleString([], {hour: '2-digit',minute: '2-digit'}).replace('PM','م').replace('AM','ص')} ل ${deletedReservation.endTime.toLocaleString([], {hour: '2-digit',minute: '2-digit'}).replace('PM','م').replace('AM','ص')}`;
+    const body = `${deletedReservation.hall.name} بقيت متاحة يوم ${toLocalTimeZone(deletedReservation.startTime).toLocaleDateString('en-GB')} في الوقت من ${toLocalTimeZone(deletedReservation.startTime).toLocaleString([], {hour: '2-digit',minute: '2-digit'}).replace('PM','م').replace('AM','ص')} ل ${toLocalTimeZone(deletedReservation.endTime).toLocaleString([], {hour: '2-digit',minute: '2-digit'}).replace('PM','م').replace('AM','ص')}`;
     await Post.create({body,creator:process.env.ADMIN_ID})
     await sendPushNotification('قاعة متاحة',body);
     res.status(200).json({message:'success', deletedReservation});
