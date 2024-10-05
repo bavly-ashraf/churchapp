@@ -26,10 +26,10 @@ Future<void> main() async {
   ));
 }
 
-Future<void> reservationAction(String reservationAction, String? token) async {
+Future<void> reservationAction(String reservationAction, String? token, dynamic reservationID) async {
   try {
     final response = await http.post(
-        Uri.parse('https://churchapp-tstf.onrender.com/reservation/confirmation'),
+        Uri.parse('https://churchapp-tstf.onrender.com/reservation/confirmation/$reservationID'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': token!
@@ -46,7 +46,7 @@ Future<void> reservationAction(String reservationAction, String? token) async {
         }
       default:
         {
-          print(response);
+          print(response.body);
         }
     }
   } catch (e) {
@@ -64,10 +64,10 @@ Future<dynamic> showReservationDialog(
             content: Text(message.notification!.body!),
             actions: [
               TextButton(
-                  onPressed: () => reservationAction('confirm', token),
+                  onPressed: () => reservationAction('confirm', token, message.data['reservationID']),
                   child: const Text('أكد الحجز')),
               TextButton(
-                  onPressed: () => reservationAction('cancel', token),
+                  onPressed: () => reservationAction('cancel', token, message.data['reservationID']),
                   child: const Text('الغي الحجز')),
             ],
           ))));
