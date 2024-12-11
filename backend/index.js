@@ -16,10 +16,7 @@ const reservationRoute = require('./Routes/reservationRoute');
 
 //////////////////// Firebase Initialization ////////////////////////
 const admin = require("firebase-admin");
-const functions  = require('firebase-functions');
 const serviceAccount = require("./church-reservation-serviceKey.json");
-const Reservation = require('./Models/Reservations');
-const { sendPushNotification } = require('./Utils/helpers');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
