@@ -99,7 +99,7 @@ const scheduledNotification = async (req, res, next) => {
     tomorrowsDate.setDate(todaysDate.getDate() + 1);
     const todaysReservations = await Reservation.find({startTime:{$gte:todaysDate,$lt:tomorrowsDate},status:'Approved',isConfirmed:false},'reserver hall startTime endTime').populate('reserver hall','firebaseToken name -_id');
     todaysReservations.forEach(reservation => {
-      sendPushNotification('تأكيد الحجز', `من فضلك دوس هنا عشان تأكد حجزك ل${reservation.hall.name} بكرة في الوقت من ${toLocalTimeZone(reservation.startTime)} ل ${toLocalTimeZone(reservation.endTime)}`,reservation.reserver.firebaseToken,reservation.id);
+      sendPushNotification('تأكيد الحجز', `من فضلك دوس هنا عشان تأكد حجزك ل${reservation.hall.name} النهاردة في الوقت من ${toLocalTimeZone(reservation.startTime)} ل ${toLocalTimeZone(reservation.endTime)}`,reservation.reserver.firebaseToken,reservation.id);
     });
     res.status(200).json({message:'success'});
 };
