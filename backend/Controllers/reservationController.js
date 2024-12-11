@@ -2,7 +2,7 @@ const Reservation = require('../Models/Reservations');
 const Post = require('../Models/Posts');
 const AppError = require('../Utils/AppError');
 const {getSameDays, sendPushNotification} = require('../Utils/helpers');
-const {toLocalTimeZone} = require('../Utils/timeZone');
+const {toLocalTimeZone, toLocalDate} = require('../Utils/timeZone');
 
 const createReservation = async (req, res, next) => {
     const { id } = req.params;
@@ -85,7 +85,7 @@ const confirmReservation = async (req, res, next) => {
 const deleteReservation = async (req, res, next) => {
     const { id } = req.params;
     const deletedReservation = await Reservation.findByIdAndDelete(id).populate('hall');
-    const body = `${deletedReservation.hall.name} بقيت متاحة يوم ${toLocalTimeZone(deletedReservation.startTime).toLocaleDateString('en-GB')} في الوقت من ${toLocalTimeZone(deletedReservation.startTime).toLocaleString([], {hour: '2-digit',minute: '2-digit'}).replace('PM','م').replace('AM','ص')} ل ${toLocalTimeZone(deletedReservation.endTime).toLocaleString([], {hour: '2-digit',minute: '2-digit'}).replace('PM','م').replace('AM','ص')}`;
+    const body = `${deletedReservation.hall.name} بقيت متاحة يوم ${toLocalDate(deletedReservation.startTime)} في الوقت من ${toLocalTimeZone(deletedReservation.startTime)} ل ${toLocalTimeZone(deletedReservation.endTime)}`;
     await Post.create({body,creator:process.env.ADMIN_ID})
     await sendPushNotification('قاعة متاحة',body);
     res.status(200).json({message:'success', deletedReservation});
@@ -99,7 +99,7 @@ const scheduledNotification = async (req, res, next) => {
     tomorrowsDate.setDate(todaysDate.getDate() + 1);
     const todaysReservations = await Reservation.find({startTime:{$gte:todaysDate,$lt:tomorrowsDate},status:'Approved',isConfirmed:false},'reserver hall startTime endTime').populate('reserver hall','firebaseToken name -_id');
     todaysReservations.forEach(reservation => {
-      sendPushNotification('تأكيد الحجز', `من فضلك دوس هنا عشان تأكد حجزك ل${reservation.hall.name} بكرة في الوقت من ${toLocalTimeZone(reservation.startTime).toLocaleString([], {hour: '2-digit',minute: '2-digit'}).replace('PM','م').replace('AM','ص')} ل ${toLocalTimeZone(reservation.endTime).toLocaleString([], {hour: '2-digit',minute: '2-digit'}).replace('PM','م').replace('AM','ص')}`,reservation.reserver.firebaseToken,reservation.id);
+      sendPushNotification('تأكيد الحجز', `من فضلك دوس هنا عشان تأكد حجزك ل${reservation.hall.name} بكرة في الوقت من ${toLocalTimeZone(reservation.startTime)} ل ${toLocalTimeZone(reservation.endTime)}`,reservation.reserver.firebaseToken,reservation.id);
     });
     res.status(200).json({message:'success'});
 };
